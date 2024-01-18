@@ -37,3 +37,4 @@ dist/
 node_modules/
 .editorconfig
 .gitkeep
+.env
