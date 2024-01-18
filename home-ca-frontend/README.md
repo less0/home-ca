@@ -4,24 +4,20 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## Development server
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. It is required that you enter your Auth0 configuration (domain and client ID) in src/assets/env.js - don't push the changes to git. 
 
-## Code scaffolding
+## Running with docker
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+The image built with `docker build` requires the following environment variables:
 
-## Build
+| Variable | Description |
+|-|-|
+| AUTH0_DOMAIN | Your Auth0 tenant domain |
+| AUTH0_CLIENT_ID | Your Auth0 client ID |
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+The container will listen at port 80. Assuming this port is available on your machine, you can run the frontend with
 
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+```
+docker build . -t home-ca-frontend
+docker run -p 80:80 --env AUTH0_DOMAIN=<your tenant domain> --env AUTH0_CLIENT_ID=<your client ID> home-ca-frontend
+```
