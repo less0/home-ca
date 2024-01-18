@@ -1,0 +1,6 @@
+<mat-card>
+    <mat-card-content>
+        Home works<br />
+        <button mat-raised-button color="primary" *ngIf="(auth.isAuthenticated$|async) == false" (click)="auth.loginWithRedirect()">Login</button>
+    </mat-card-content>
+</mat-card>
