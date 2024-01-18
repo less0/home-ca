@@ -18,6 +18,8 @@ import { EnvServiceFactory, EnvServiceProvider } from './env.service.provider';
 import { EnvService } from './env.service';
 
 const env = EnvServiceFactory() as EnvService;
+console.log(env);
+
 @NgModule({
   declarations: [
     AppComponent,
