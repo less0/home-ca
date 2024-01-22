@@ -14,6 +14,8 @@ The image built with `docker build` requires the following environment variables
 |-|-|
 | AUTH0_DOMAIN | Your Auth0 tenant domain |
 | AUTH0_CLIENT_ID | Your Auth0 client ID |
+| SSL_CERT | The SSL certificate for the server. All newlines have to be replaced with `%`. |
+| SSL_KEY | The SSL private key for the server. All newlines have to be replaced with `%`. |
 
 The container will listen at port 80. Assuming this port is available on your machine, you can run the frontend with
 
