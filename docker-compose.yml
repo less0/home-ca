@@ -6,5 +6,16 @@ services:
       - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
       - SSL_CERT=${SSL_CERT}
       - SSL_KEY=${SSL_KEY}
+      - BACKEND_HOSTNAME=${BACKEND_HOSTNAME}
+      - BACKEND_PORT=${BACKEND_PORT}
     ports:
       - 443:443
+  backend:
+    build: home-ca-backend
+    environment:
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN}
+      - AUTH0_CLIENT_ID=${AUTH0_CLIENT_ID}
+      - SSL_CERT=${SSL_CERT}
+      - SSL_KEY=${SSL_KEY}
+    ports:
+      - ${BACKEND_PORT}:443
