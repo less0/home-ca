@@ -16,6 +16,7 @@ import { MainComponent } from './main/main.component';
 import { HomeComponent } from './home/home.component'
 import { EnvServiceFactory, EnvServiceProvider } from './env.service.provider';
 import { EnvService } from './env.service';
+import { HttpClientModule } from '@angular/common/http';
 
 const env = EnvServiceFactory() as EnvService;
 console.log(env);
@@ -44,7 +45,8 @@ console.log(env);
     MatIconModule,
     MatSidenavModule,
     MatExpansionModule,
-    MatCardModule
+    MatCardModule,
+    HttpClientModule
   ],
   providers: [EnvServiceProvider],
   bootstrap: [AppComponent]

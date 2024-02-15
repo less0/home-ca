@@ -6,4 +6,5 @@ import { Injectable } from '@angular/core';
 export class EnvService {
   public AUTH0_DOMAIN = '';
   public AUTH0_CLIENT_ID = '';
+  public BACKEND_URI = '';
 }
