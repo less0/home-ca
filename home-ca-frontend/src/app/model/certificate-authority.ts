@@ -1,4 +1,6 @@
 export class CertificateAuthority {
-    public name : String | undefined
-    public description : String | undefined
+    public name : string | undefined;
+    public description : string | undefined;
+    public hasChildren : boolean = false;
+    public links: { [name: string]: string; } | undefined;
 }

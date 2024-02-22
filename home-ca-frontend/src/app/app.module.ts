@@ -11,6 +11,8 @@ import { MatIconModule } from '@angular/material/icon'
 import { MatSidenavModule } from '@angular/material/sidenav'
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCardModule } from '@angular/material/card'
+import { MatTreeModule } from '@angular/material/tree'
+import { MatProgressBarModule } from '@angular/material/progress-bar'
 import { NavigationComponent } from './navigation/navigation.component';
 import { MainComponent } from './main/main.component';
 import { HomeComponent } from './home/home.component'
@@ -46,6 +48,8 @@ console.log(env);
     MatSidenavModule,
     MatExpansionModule,
     MatCardModule,
+    MatTreeModule,
+    MatProgressBarModule,
     HttpClientModule
   ],
   providers: [EnvServiceProvider],
