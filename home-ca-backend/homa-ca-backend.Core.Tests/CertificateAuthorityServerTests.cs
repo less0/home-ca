@@ -6,7 +6,7 @@ using Xunit;
 
 namespace homa_ca_backend.Core.Tests;
 
-public class CertificateAuthorityServerTests
+public partial class CertificateAuthorityServerTests
 {
     [Fact]
     public void GetRootCertificateAuthorities_IsInitializedEmpty()
@@ -35,14 +35,14 @@ public class CertificateAuthorityServerTests
     {
         var componentUnderTest = new CertificateAuthorityServer();
         var exception = Record.Exception(() => componentUnderTest.GetIntermediateCertificateAuthorities(new()));
-        exception.Should().BeOfType<Exception>();
+        exception.Should().BeOfType<UnknownCertificateAuthorityIdException>();
     }
 
     [Fact]
     public void GetIntermediateCertificateAuthorities_ParentExistsAndIsEmpty_ReturnsEmpty()
     {
         var componentUnderTest = new CertificateAuthorityServer();
-        var rootCertificateAuthority = new CertificateAuthority()
+        var rootCertificateAuthority = new CertificateAuthority
         {
             Name = "Root"
         };
@@ -121,16 +121,16 @@ public class CertificateAuthorityServerTests
     public void AddRootCertificateAuthority_IdExistsInAnotherRootCertificateAuthority_ThrowsException()
     {
         CertificateAuthorityServer componentUnderTest = new();
-        var id = Guid.NewGuid();
+        CertificateAuthorityId id = new();
         componentUnderTest.AddRootCertificateAuthority(new()
         {
             Name = "Root",
-            Id = new(id)
+            Id = id
         });
         var exception = Record.Exception(() => componentUnderTest.AddRootCertificateAuthority(new()
         {
             Name = "Duplicate Id Root",
-            Id = new(id)
+            Id = id
         }));
         exception.Should().BeOfType<DuplicateCertificateAuthorityIdException>();
     }
@@ -139,23 +139,23 @@ public class CertificateAuthorityServerTests
     public void AddRootCertificateAuthority_IdExistsInIntermediateCertificateAuthority_ThrowsException()
     {
         CertificateAuthorityServer componentUnderTest = new();
-        var rootId = Guid.NewGuid();
-        var duplicateId = Guid.NewGuid();
+        CertificateAuthorityId rootId = new();
+        CertificateAuthorityId duplicateId = new();
         componentUnderTest.AddRootCertificateAuthority(new()
         {
             Name = "Root",
-            Id = new(rootId)
+            Id = rootId
         });
-        componentUnderTest.AddIntermediateCertificateAuthority(new(rootId), new()
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId, new()
         {
             Name = "Intermediate",
-            Id = new(duplicateId)
+            Id = duplicateId
         });
 
         var exception = Record.Exception(() => componentUnderTest.AddRootCertificateAuthority(new()
         {
             Name = "Duplicate Id Root",
-            Id = new(duplicateId)
+            Id = duplicateId
         }));
 
         exception.Should().BeOfType<DuplicateCertificateAuthorityIdException>();
@@ -165,8 +165,8 @@ public class CertificateAuthorityServerTests
     public void AddIntermediateCertificateAuthority_IdExistsInRootCertificateAuthority_ThrowsException()
     {
         CertificateAuthorityServer componentUnderTest = new();
-        CertificateAuthorityId firstRootId = new(Guid.NewGuid());
-        CertificateAuthorityId secondRootId = new(Guid.NewGuid());
+        CertificateAuthorityId firstRootId = new();
+        CertificateAuthorityId secondRootId = new();
         
         componentUnderTest.AddRootCertificateAuthority(new()
         {
@@ -191,9 +191,9 @@ public class CertificateAuthorityServerTests
     public void AddIntermediateCertificateAuthority_IdExistsInAnotherRootCertificateAuthority_ThrowsException()
     {
         CertificateAuthorityServer componentUnderTest = new();
-        CertificateAuthorityId firstRootId = new(Guid.NewGuid());
-        CertificateAuthorityId secondRootId = new(Guid.NewGuid());
-        CertificateAuthorityId intermediateId = new(Guid.NewGuid());
+        CertificateAuthorityId firstRootId = new();
+        CertificateAuthorityId secondRootId = new();
+        CertificateAuthorityId intermediateId = new();
         
         componentUnderTest.AddRootCertificateAuthority(new()
         {

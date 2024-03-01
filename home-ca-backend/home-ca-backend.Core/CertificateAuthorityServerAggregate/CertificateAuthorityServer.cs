@@ -7,10 +7,7 @@ public class CertificateAuthorityServer
 {
     private readonly List<CertificateAuthority> _rootCertificateAuthorities = new();
     
-    public IReadOnlyCollection<CertificateAuthority> GetRootCertificateAuthorities()
-    {
-        return new ReadOnlyCollection<CertificateAuthority>(_rootCertificateAuthorities);
-    }
+    public IReadOnlyCollection<CertificateAuthority> GetRootCertificateAuthorities() => new ReadOnlyCollection<CertificateAuthority>(_rootCertificateAuthorities);
 
     public IReadOnlyCollection<CertificateAuthority> GetIntermediateCertificateAuthorities(CertificateAuthorityId parentId)
     {
@@ -31,10 +28,16 @@ public class CertificateAuthorityServer
         parent.AddIntermediateCertificateAuthority(certificateAuthority);
     }
 
+    public void AddLeaf(CertificateAuthorityId id, Leaf leaf)
+    {
+        EnsureIsValidToBeAdded(leaf);
+        var parent = FindById(id);
+        parent.AddLeaf(leaf);
+    }
+
     private CertificateAuthority FindById(CertificateAuthorityId id)
     {
-        // TODO Add custom exception
-        return FindById(_rootCertificateAuthorities, id) ?? throw new Exception();
+        return FindById(_rootCertificateAuthorities, id) ?? throw new UnknownCertificateAuthorityIdException();
     }
 
     private CertificateAuthority? FindById(IReadOnlyCollection<CertificateAuthority> certificateAuthorities, CertificateAuthorityId id)
@@ -58,5 +61,19 @@ public class CertificateAuthorityServer
     {
         return certificateAuthority.Id.Equals(id)
                || certificateAuthority.IntermediateCertificateAuthorities.Any(ca => IdExistsInTree(ca, id));
+    }
+
+    private void EnsureIsValidToBeAdded(Leaf leaf)
+    {
+        if (_rootCertificateAuthorities.Any(ca => LeafExists(leaf.Id, ca)))
+        {
+            throw new DuplicateLeafIdException();
+        }
+    }
+    
+    private bool LeafExists(LeafId leafId, CertificateAuthority authority)
+    {
+        return authority.Leaves.Any(leaf => leaf.Id.Equals(leafId)) 
+               || authority.IntermediateCertificateAuthorities.Any(ca => LeafExists(leafId, ca));
     }
 }
