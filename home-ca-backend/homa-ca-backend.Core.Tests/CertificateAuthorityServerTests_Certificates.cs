@@ -10,34 +10,6 @@ namespace homa_ca_backend.Core.Tests;
 public partial class CertificateAuthorityServerTests
 {
     [Fact]
-    public void SetPublicKey_IsSetOnTheCorrectCertificateAuthority()
-    {
-        CertificateAuthorityServer componentUnderTest = new();
-
-        CertificateAuthorityId firstRootId = new();
-        CertificateAuthority firstRoot = new()
-        {
-            Id = firstRootId,
-            Name = "First Root"
-        };
-
-        CertificateAuthorityId secondRootId = new();
-        CertificateAuthority secondRoot = new()
-        {
-            Id = secondRootId,
-            Name = "Second Root"
-        };
-        
-        componentUnderTest.AddRootCertificateAuthority(firstRoot);
-        componentUnderTest.AddRootCertificateAuthority(secondRoot);
-
-        componentUnderTest.SetPublicKey(firstRootId, "FooBar");
-
-        firstRoot.PublicKey.Should().Be("FooBar");
-        secondRoot.PublicKey.Should().BeNull();
-    }
-
-    [Fact]
     public void GenerateRootCertificateAuthorityCertificate_CertificateIsGenerated()
     {
         CertificateAuthorityServer componentUnderTest = new();
@@ -46,7 +18,7 @@ public partial class CertificateAuthorityServerTests
             Name = "Root Certificate Authority"
         };
         componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
-        componentUnderTest.GenerateRootCertificateAuthorityCertificate(rootCertificateAuthority.Id, "password");
+        componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "password");
 
         rootCertificateAuthority.EncryptedCertificate.Should().NotBeNull();
         X509Certificate2 certificate = new(rootCertificateAuthority.EncryptedCertificate!, "password");
@@ -68,8 +40,8 @@ public partial class CertificateAuthorityServerTests
         componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
         componentUnderTest.AddIntermediateCertificateAuthority(rootCertificateAuthority.Id,
             intermediateCertificateAuthority);
-        componentUnderTest.GenerateRootCertificateAuthorityCertificate(rootCertificateAuthority.Id, "root password");
-        componentUnderTest.GenerateIntermediateCertificateAuthorityCertificate(intermediateCertificateAuthority.Id,
+        componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "root password");
+        componentUnderTest.GenerateIntermediateCertificate(intermediateCertificateAuthority.Id,
             "intermediate password", "root password");
 
         intermediateCertificateAuthority.EncryptedCertificate.Should().NotBeNull();
@@ -89,7 +61,7 @@ public partial class CertificateAuthorityServerTests
             Name = "Root Certificate Authority"
         });
         componentUnderTest
-            .Invoking(x => x.GenerateIntermediateCertificateAuthorityCertificate(nonExistingId, "intermediate password", "root password"))
+            .Invoking(x => x.GenerateIntermediateCertificate(nonExistingId, "intermediate password", "root password"))
             .Should()
             .Throw<UnknownCertificateAuthorityIdException>();
     }
@@ -103,7 +75,7 @@ public partial class CertificateAuthorityServerTests
             Name = "Root Certificate Authority"
         };
         componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
-        componentUnderTest.Invoking(x => x.GenerateIntermediateCertificateAuthorityCertificate(rootCertificateAuthority.Id, "1234", "4321"))
+        componentUnderTest.Invoking(x => x.GenerateIntermediateCertificate(rootCertificateAuthority.Id, "1234", "4321"))
             .Should()
             .Throw<NoIntermediateCertificateAuthorityException>();
     }
@@ -146,7 +118,7 @@ public partial class CertificateAuthorityServerTests
         };
         componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
         componentUnderTest.AddLeaf(rootCertificateAuthority.Id, leaf);
-        componentUnderTest.GenerateRootCertificateAuthorityCertificate(rootCertificateAuthority.Id, "root password");
+        componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "root password");
         
         componentUnderTest.GenerateLeafCertificate(leaf.Id, "leaf password", "root password");
         
@@ -154,6 +126,33 @@ public partial class CertificateAuthorityServerTests
         X509Certificate2 loadedCertificate = new(leaf.EncryptedCertificate!, "leaf password");
         loadedCertificate.SubjectName.Name.Should().Be("CN=foo.local");
     }
-    
-    
+
+    [Fact]
+    public void GenerateRootCertificate_PemCertificateIsSet()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthority rootCertificateAuthority = new() { Name = "Root Certificate Authority" };
+        componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
+        componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "root password");
+        rootCertificateAuthority.PemCertificate.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void GenerateIntermediateCertificate_PemCertificateIsSet()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthority rootCertificateAuthority = new()
+        {
+            Name = "Root Certificate Authority"
+        };
+        CertificateAuthority intermediateCertificateAuthority = new() { Name = "Intermediate Certificate Authority" };
+        componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
+        componentUnderTest.AddIntermediateCertificateAuthority(rootCertificateAuthority.Id,
+            intermediateCertificateAuthority);
+        componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "root password");
+        componentUnderTest.GenerateIntermediateCertificate(intermediateCertificateAuthority.Id, "intermediate password",
+            "root password");
+        
+        intermediateCertificateAuthority.PemCertificate.Should().NotBeNull();
+    }
 }

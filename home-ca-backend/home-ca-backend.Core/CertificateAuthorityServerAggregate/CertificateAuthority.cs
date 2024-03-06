@@ -16,7 +16,7 @@ public class CertificateAuthority
         new ReadOnlyCollection<CertificateAuthority>(_intermediateCertificateAuthorities);
 
     public IReadOnlyCollection<Leaf> Leaves => new ReadOnlyCollection<Leaf>(_leaves);
-    public string? PublicKey { get; internal set; }
+    public string? PemCertificate { get; private set; }
     
     public byte[]? EncryptedCertificate { get; private set; }
 
@@ -39,7 +39,7 @@ public class CertificateAuthority
         
         var certificate =
             certificateRequest.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(10));
-        PublicKey = certificate.GetPublicKeyString();
+        PemCertificate = certificate.GetPublicKeyString();
 
         EncryptedCertificate = certificate.Export(X509ContentType.Pfx, password);
     }
@@ -72,5 +72,6 @@ public class CertificateAuthority
             DateTimeOffset.UtcNow.AddDays(365), SerialNumberGenerator.GenerateSerialNumber());
         certificate = certificate.CopyWithPrivateKey(rsa);
         EncryptedCertificate = certificate.Export(X509ContentType.Pfx, intermediatePassword);
+        PemCertificate = certificate.ExportCertificatePem();
     }
 }
