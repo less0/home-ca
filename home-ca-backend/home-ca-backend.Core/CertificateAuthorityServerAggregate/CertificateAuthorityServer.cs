@@ -88,4 +88,61 @@ public class CertificateAuthorityServer
         var certificateAuthority = _rootCertificateAuthorities.FirstOrDefault(ca => ca.Id.Equals(id));
         certificateAuthority.GenerateCertificate(password);
     }
+
+    public void GenerateIntermediateCertificateAuthorityCertificate(CertificateAuthorityId id, string intermediatePassword, string password)
+    {
+        var certificateAuthority = FindParent(id);
+        certificateAuthority.GenerateIntermediateCertificate(id, intermediatePassword, password);
+    }
+
+    public void GenerateLeafCertificate(LeafId id, string leafPassword, string signingPassword)
+    {
+        var certificateAuthority = FindParent(id);
+        certificateAuthority.GenerateLeafCertificate(id, leafPassword, signingPassword);
+    }
+
+    private CertificateAuthority FindParent(CertificateAuthorityId id)
+    {
+        if (_rootCertificateAuthorities.Any(ca => ca.Id.Equals(id)))
+        {
+            throw new NoIntermediateCertificateAuthorityException();
+        }
+        
+        var parent = _rootCertificateAuthorities
+            .Select(ca => FindParent(id, ca))
+            .FirstOrDefault(ca => ca != null);
+        return parent ?? throw new UnknownCertificateAuthorityIdException();
+    }
+
+    private CertificateAuthority? FindParent(CertificateAuthorityId id, CertificateAuthority currentCertificateAuthority)
+    {
+        var matchingCertificateAuthority =
+            currentCertificateAuthority.IntermediateCertificateAuthorities.FirstOrDefault(ca => ca.Id.Equals(id));
+        if (matchingCertificateAuthority != null)
+        {
+            return currentCertificateAuthority;
+        }
+        
+        return currentCertificateAuthority.IntermediateCertificateAuthorities.Select(ca => FindParent(id, ca))
+            .FirstOrDefault(ca => ca != null);
+    }
+
+    private CertificateAuthority FindParent(LeafId id)
+    {
+        var parent = _rootCertificateAuthorities.Select(ca => FindParent(id, ca))
+            .FirstOrDefault(ca => ca != null);
+        return parent ?? throw new UnknownLeafIdException();
+    }
+
+    private CertificateAuthority? FindParent(LeafId id, CertificateAuthority currentCertificateAuthority)
+    {
+        if (currentCertificateAuthority.Leaves.Any(leaf => leaf.Id.Equals(id)))
+        {
+            return currentCertificateAuthority;
+        }
+
+        return currentCertificateAuthority.IntermediateCertificateAuthorities
+            .Select(ca => FindParent(id, ca))
+            .FirstOrDefault(ca => ca != null);
+    }
 }
