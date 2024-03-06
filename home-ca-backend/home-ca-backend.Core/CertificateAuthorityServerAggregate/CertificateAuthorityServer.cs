@@ -35,6 +35,12 @@ public class CertificateAuthorityServer
         parent.AddLeaf(leaf);
     }
 
+    public void SetPublicKey(CertificateAuthorityId id, string publicKey)
+    {
+        var authority = FindById(id);
+        authority.PublicKey = publicKey;
+    }
+
     private CertificateAuthority FindById(CertificateAuthorityId id)
     {
         return FindById(_rootCertificateAuthorities, id) ?? throw new UnknownCertificateAuthorityIdException();
@@ -70,10 +76,16 @@ public class CertificateAuthorityServer
             throw new DuplicateLeafIdException();
         }
     }
-    
+
     private bool LeafExists(LeafId leafId, CertificateAuthority authority)
     {
         return authority.Leaves.Any(leaf => leaf.Id.Equals(leafId)) 
                || authority.IntermediateCertificateAuthorities.Any(ca => LeafExists(leafId, ca));
+    }
+
+    public void GenerateRootCertificateAuthorityCertificate(CertificateAuthorityId id, string password)
+    {
+        var certificateAuthority = _rootCertificateAuthorities.FirstOrDefault(ca => ca.Id.Equals(id));
+        certificateAuthority.GenerateCertificate(password);
     }
 }
