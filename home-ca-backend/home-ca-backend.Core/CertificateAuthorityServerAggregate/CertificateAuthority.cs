@@ -20,6 +20,7 @@ public class CertificateAuthority
     public string? PemCertificate { get; private set; }
     
     public byte[]? EncryptedCertificate { get; private set; }
+    public string? PemPrivateKey { get; private set; }
 
     internal void AddIntermediateCertificateAuthority(CertificateAuthority certificateAuthority)
     {
@@ -34,7 +35,7 @@ public class CertificateAuthority
     internal void GenerateCertificate(string password)
     {
         var certificate = GenerateSelfSignedCertificate();
-        StoreCertificate(password, certificate);
+        StoreCertificate(certificate, password);
     }
 
     internal void GenerateIntermediateCertificate(CertificateAuthorityId intermediateCertificateAuthorityId, string intermediatePassword, string signingCertificatePassword)
@@ -84,7 +85,7 @@ public class CertificateAuthority
     private void GenerateSignedCertificate(string intermediatePassword, X509Certificate2 signingCertificate)
     {
         var certificate = GenerateSignedCertificate(signingCertificate);
-        StoreCertificate(intermediatePassword, certificate);
+        StoreCertificate(certificate, intermediatePassword);
     }
 
     private X509Certificate2 GenerateSelfSignedCertificate()
@@ -112,10 +113,11 @@ public class CertificateAuthority
         return certificate;
     }
 
-    private void StoreCertificate(string intermediatePassword, X509Certificate2 certificate)
+    private void StoreCertificate(X509Certificate2 certificate, string password)
     {
-        EncryptedCertificate = certificate.Export(X509ContentType.Pfx, intermediatePassword);
+        EncryptedCertificate = certificate.Export(X509ContentType.Pfx, password);
         PemCertificate = certificate.ExportCertificatePem();
+        PemPrivateKey = certificate.ExportEncryptedPkcs8PrivateKeyPem(password);
     }
 
     private bool HasLeafWithId(LeafId id)

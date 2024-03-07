@@ -1,5 +1,8 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using System.Runtime.Versioning;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
+using FluentAssertions.Execution;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate.Exceptions;
 using Xunit;
@@ -127,6 +130,32 @@ public partial class CertificateAuthorityServerTests
     }
 
     [Fact]
+    public void GenerateLeafCertificate_PemPrivateKeyIsSet()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        Leaf leaf = new()
+        {
+            Name = "Leaf",
+        };
+        componentUnderTest.AddRootCertificateAuthority(new()
+        {
+            Name = "Root Certificate Authority",
+            Id = rootId
+        });
+        componentUnderTest.AddLeaf(rootId, leaf);
+        componentUnderTest.GenerateRootCertificate(rootId, "pass");
+        componentUnderTest.GenerateLeafCertificate(leaf.Id, "word", "pass");
+
+        using (new AssertionScope())
+        {
+            leaf.PemPrivateKey.Should().NotBeNull();
+            leaf.PemPrivateKey.Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----");
+            var rsa = DecodePemPrivateKey(leaf.PemPrivateKey!, "word");
+        }
+    }
+
+    [Fact]
     public void GenerateRootCertificate_PemCertificateIsSet()
     {
         CertificateAuthorityServer componentUnderTest = new();
@@ -134,6 +163,28 @@ public partial class CertificateAuthorityServerTests
         componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
         componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "root password");
         rootCertificateAuthority.PemCertificate.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void GenerateRootCertificate_PemPrivateKeyIsSet()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthority rootCertificateAuthority = new()
+        {
+            Name = "Root Certificate Authority"
+        };
+        componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
+        
+        componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "p@55w0rd");
+
+        using(new AssertionScope())
+        {
+            rootCertificateAuthority.PemPrivateKey.Should().NotBeNull();
+            rootCertificateAuthority.PemPrivateKey.Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+
+            using var rsa = DecodePemPrivateKey(rootCertificateAuthority.PemPrivateKey!, "p@55w0rd");
+            rsa.KeySize.Should().Be(4096);
+        }
     }
 
     [Fact]
@@ -153,6 +204,37 @@ public partial class CertificateAuthorityServerTests
             "root password");
         
         intermediateCertificateAuthority.PemCertificate.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void GenerateIntermediateCertificate_PemPrivateKeyIsSet()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        CertificateAuthority intermediateCertificateAuthority = new()
+        {
+            Name = "Intermediate Certificate Authority"
+        };
+        
+        componentUnderTest.AddRootCertificateAuthority(new()
+        {
+            Id = rootId,
+            Name = "Root Certificate Authority"
+        });
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId, intermediateCertificateAuthority);
+        
+        componentUnderTest.GenerateRootCertificate(rootId, "root password");
+        componentUnderTest.GenerateIntermediateCertificate(intermediateCertificateAuthority.Id, "intermediate password",
+            "root password");
+
+        using (new AssertionScope())
+        {
+            intermediateCertificateAuthority.PemPrivateKey.Should().NotBeNull();
+            intermediateCertificateAuthority.PemPrivateKey.Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+            
+            using var rsa = DecodePemPrivateKey(intermediateCertificateAuthority.PemPrivateKey!, "intermediate password");
+            rsa.KeySize.Should().Be(4096);
+        }
     }
 
     [Fact]
@@ -335,7 +417,7 @@ public partial class CertificateAuthorityServerTests
         certificates[1].SubjectName.Name.Should().Be("CN=Intermediate Certificate Authority");
         certificates[2].SubjectName.Name.Should().Be("CN=Root Certificate Authority");
     }
-    
+
     private List<X509Certificate2> ReadCertificatesFromPem(string pemChain)
     {
         var pemCertificates = pemChain.Split("-----END CERTIFICATE-----");
@@ -354,5 +436,17 @@ public partial class CertificateAuthorityServerTests
         }
 
         return x509Certificates;
+    }
+
+    private static RSA DecodePemPrivateKey(string pemPrivateKey, string password)
+    {
+        var rsa = RSA.Create(512);
+
+        var encryptedPrivateKeyBase64 = pemPrivateKey
+            .Replace("-----BEGIN ENCRYPTED PRIVATE KEY-----\n", "")
+            .Replace("-----END ENCRYPTED PRIVATE KEY-----", "");
+        var encryptedPrivateKey = Convert.FromBase64String(encryptedPrivateKeyBase64);
+        rsa.ImportEncryptedPkcs8PrivateKey(password, encryptedPrivateKey, out _);
+        return rsa;
     }
 }

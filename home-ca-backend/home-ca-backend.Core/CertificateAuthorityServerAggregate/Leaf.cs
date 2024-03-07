@@ -8,7 +8,8 @@ public class Leaf
     public LeafId Id { get; init; } = new();
     public required string Name { get; init; }
     public byte[]? EncryptedCertificate { get; set; }
-    public string? PemCertificate { get; internal set; }
+    public string? PemCertificate { get; private set; }
+    public string? PemPrivateKey { get; private set; }
 
     internal void GenerateSignedCertificate(string password, X509Certificate2 signingCertificate)
     {   
@@ -26,5 +27,6 @@ public class Leaf
 
         EncryptedCertificate = certificate.Export(X509ContentType.Pfx, password);
         PemCertificate = certificate.ExportCertificatePem();
+        PemPrivateKey = certificate.ExportEncryptedPkcs8PrivateKeyPem(password);
     }
 }
