@@ -33,6 +33,62 @@ public class CertificateAuthority
 
     internal void GenerateCertificate(string password)
     {
+        var certificate = GenerateSelfSignedCertificate();
+        StoreCertificate(password, certificate);
+    }
+
+    internal void GenerateIntermediateCertificate(CertificateAuthorityId intermediateCertificateAuthorityId, string intermediatePassword, string signingCertificatePassword)
+    {
+        var intermediateCertificateAuthority =
+            _intermediateCertificateAuthorities.First(ca => ca.Id.Equals(intermediateCertificateAuthorityId));
+        X509Certificate2 signingCertificate = GetSigningCertificate(signingCertificatePassword);
+        intermediateCertificateAuthority.GenerateSignedCertificate(intermediatePassword, signingCertificate);
+    }
+
+    public void GenerateLeafCertificate(LeafId id, string leafPassword, string signingCertificatePassword)
+    {
+        var leaf = _leaves.First(leaf => leaf.Id.Equals(id));
+        X509Certificate2 signingCertificate = GetSigningCertificate(signingCertificatePassword);
+        leaf.GenerateSignedCertificate(leafPassword, signingCertificate);
+    }
+
+    internal string GetCertificateChain(LeafId id)
+    {
+        if (PemCertificate == null)
+        {
+            throw new MissingPemCertificateException();
+        }
+
+        if (HasLeafWithId(id))
+        {
+            var leafPemCertificate = GetLeafPemCertificate(id);
+            return $"{leafPemCertificate}\n{PemCertificate}";
+        }
+
+        var remainingCertificateChain = GetRemainingCertificateChain(id);
+        return $"{remainingCertificateChain}\n{PemCertificate}";
+    }
+
+    internal bool IsParentOf(LeafId id)
+    {
+        return HasLeafWithId(id) 
+               || _intermediateCertificateAuthorities.Any(ca => ca.IsParentOf(id));
+
+    }
+
+    private X509Certificate2 GetSigningCertificate(string signingCertificatePassword)
+    {
+        return new(EncryptedCertificate, signingCertificatePassword);
+    }
+
+    private void GenerateSignedCertificate(string intermediatePassword, X509Certificate2 signingCertificate)
+    {
+        var certificate = GenerateSignedCertificate(signingCertificate);
+        StoreCertificate(intermediatePassword, certificate);
+    }
+
+    private X509Certificate2 GenerateSelfSignedCertificate()
+    {
         using var rsa = RSA.Create(4096);
         var certificateRequest =
             new CertificateRequest("cn=" + Name, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
@@ -40,29 +96,10 @@ public class CertificateAuthority
         
         var certificate =
             certificateRequest.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(10));
-        PemCertificate = certificate.ExportCertificatePem();
-
-        EncryptedCertificate = certificate.Export(X509ContentType.Pfx, password);
+        return certificate;
     }
 
-    internal void GenerateIntermediateCertificate(CertificateAuthorityId intermediateCertificateAuthorityId, string intermediatePassword, string signingCertificatePassword)
-    {
-        var intermediateCertificateAuthority =
-            _intermediateCertificateAuthorities.First(ca => ca.Id.Equals(intermediateCertificateAuthorityId));
-        X509Certificate2 signingCertificate = new(EncryptedCertificate, signingCertificatePassword);
-        
-        intermediateCertificateAuthority.GenerateSignedCertificate(intermediatePassword, signingCertificate);
-    }
-
-    public void GenerateLeafCertificate(LeafId id, string leafPassword, string signingCertificatePassword)
-    {
-        var leaf = _leaves.First(leaf => leaf.Id.Equals(id));
-        X509Certificate2 signingCertificate = new(EncryptedCertificate, signingCertificatePassword);
-
-        leaf.GenerateSignedCertificate(leafPassword, signingCertificate);
-    }
-
-    private void GenerateSignedCertificate(string intermediatePassword, X509Certificate2 signingCertificate)
+    private X509Certificate2 GenerateSignedCertificate(X509Certificate2 signingCertificate)
     {
         using var rsa = RSA.Create(4096);
         CertificateRequest request = new($"cn={Name}", rsa, HashAlgorithmName.SHA256,
@@ -72,30 +109,13 @@ public class CertificateAuthority
         var certificate = request.Create(signingCertificate, DateTimeOffset.UtcNow.AddDays(-1),
             DateTimeOffset.UtcNow.AddYears(2), SerialNumberGenerator.GenerateSerialNumber());
         certificate = certificate.CopyWithPrivateKey(rsa);
-        EncryptedCertificate = certificate.Export(X509ContentType.Pfx, intermediatePassword);
-        PemCertificate = certificate.ExportCertificatePem();
+        return certificate;
     }
 
-    public string GetCertificateChain(LeafId id)
+    private void StoreCertificate(string intermediatePassword, X509Certificate2 certificate)
     {
-        if (PemCertificate == null)
-        {
-            throw new MissingPemCertificateException();
-        }
-
-        if (HasLeafWithId(id))
-        {
-            var leaf = _leaves.First(leaf => leaf.Id.Equals(id));
-            if (leaf.PemCertificate == null)
-            {
-                throw new MissingPemCertificateException();
-            }
-
-            return $"{leaf.PemCertificate}\n{PemCertificate}";
-        }
-
-        var remainingCertificateChain = _intermediateCertificateAuthorities.FirstOrDefault(ca => ca.IsParentOf(id)).GetCertificateChain(id);
-        return $"{remainingCertificateChain}\n{PemCertificate}";
+        EncryptedCertificate = certificate.Export(X509ContentType.Pfx, intermediatePassword);
+        PemCertificate = certificate.ExportCertificatePem();
     }
 
     private bool HasLeafWithId(LeafId id)
@@ -103,10 +123,22 @@ public class CertificateAuthority
         return _leaves.Any(leaf => leaf.Id.Equals(id));
     }
 
-    internal bool IsParentOf(LeafId id)
+    private string GetLeafPemCertificate(LeafId id)
     {
-        return _leaves.Any(leaf => leaf.Id.Equals(id))
-               || _intermediateCertificateAuthorities.Any(ca => ca.IsParentOf(id));
+        var leaf = _leaves.First(leaf => leaf.Id.Equals(id));
+        var leafPemCertificate = leaf.PemCertificate;
+        if (leafPemCertificate == null)
+        {
+            throw new MissingPemCertificateException();
+        }
 
+        return leafPemCertificate;
+    }
+
+    private string GetRemainingCertificateChain(LeafId id)
+    {
+        var leafsParent = _intermediateCertificateAuthorities.FirstOrDefault(ca => ca.IsParentOf(id))
+            ?? throw new UnknownLeafIdException(); // Should not be thrown anyway
+        return leafsParent.GetCertificateChain(id);
     }
 }
