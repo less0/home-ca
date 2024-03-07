@@ -116,8 +116,15 @@ public class CertificateAuthority
             RSASignaturePadding.Pkcs1);
         request.CertificateExtensions.Add(new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
         request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.KeyCertSign, critical: false));
+
+        var notAfter = _timeProvider.GetUtcNow().AddYears(3);
+        if (notAfter > signingCertificate.NotAfter)
+        {
+            notAfter = signingCertificate.NotAfter;
+        }
+        
         var certificate = request.Create(signingCertificate, _timeProvider.GetUtcNow().AddDays(-1),
-            _timeProvider.GetUtcNow().AddYears(3), SerialNumberGenerator.GenerateSerialNumber());
+            notAfter, SerialNumberGenerator.GenerateSerialNumber());
         certificate = certificate.CopyWithPrivateKey(rsa);
         return certificate;
     }

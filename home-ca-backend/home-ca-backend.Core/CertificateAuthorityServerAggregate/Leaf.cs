@@ -38,8 +38,14 @@ public class Leaf
         request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension([new Oid("1.3.6.1.5.5.7.3.1")], false));
         request.CertificateExtensions.Add(new X509SubjectKeyIdentifierExtension(request.PublicKey, false));
 
+        var notAfter = _timeProvider.GetUtcNow().AddDays(365);
+        if (notAfter > signingCertificate.NotAfter)
+        {
+            notAfter = signingCertificate.NotAfter;
+        }
+        
         var certificate = request.Create(signingCertificate, _timeProvider.GetUtcNow().AddDays(-1),
-                _timeProvider.GetUtcNow().AddDays(365), SerialNumberGenerator.GenerateSerialNumber())
+                notAfter, SerialNumberGenerator.GenerateSerialNumber())
             .CopyWithPrivateKey(rsa);
         return certificate;
     }
