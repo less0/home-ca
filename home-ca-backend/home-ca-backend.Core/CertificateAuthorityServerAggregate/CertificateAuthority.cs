@@ -7,8 +7,18 @@ namespace home_ca_backend.Core.CertificateAuthorityServerAggregate;
 
 public class CertificateAuthority
 {
+    private readonly TimeProvider _timeProvider;
     private readonly List<CertificateAuthority> _intermediateCertificateAuthorities = new();
     private readonly List<Leaf> _leaves = new();
+    
+    public CertificateAuthority()
+        : this(TimeProvider.System)
+    {}
+
+    public CertificateAuthority(TimeProvider timeProvider)
+    {
+        _timeProvider = timeProvider;
+    }
     
     public CertificateAuthorityId Id { get; init; } = new();
     public required string Name { get; init; }
@@ -18,7 +28,6 @@ public class CertificateAuthority
 
     public IReadOnlyCollection<Leaf> Leaves => new ReadOnlyCollection<Leaf>(_leaves);
     public string? PemCertificate { get; private set; }
-    
     public byte[]? EncryptedCertificate { get; private set; }
     public string? PemPrivateKey { get; private set; }
 
@@ -96,7 +105,7 @@ public class CertificateAuthority
         certificateRequest.CertificateExtensions.Add(new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
         
         var certificate =
-            certificateRequest.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(10));
+            certificateRequest.CreateSelfSigned(_timeProvider.GetUtcNow().AddDays(-1), _timeProvider.GetUtcNow().AddYears(10));
         return certificate;
     }
 
@@ -107,8 +116,8 @@ public class CertificateAuthority
             RSASignaturePadding.Pkcs1);
         request.CertificateExtensions.Add(new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
         request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.KeyCertSign, critical: false));
-        var certificate = request.Create(signingCertificate, DateTimeOffset.UtcNow.AddDays(-1),
-            DateTimeOffset.UtcNow.AddYears(2), SerialNumberGenerator.GenerateSerialNumber());
+        var certificate = request.Create(signingCertificate, _timeProvider.GetUtcNow().AddDays(-1),
+            _timeProvider.GetUtcNow().AddYears(3), SerialNumberGenerator.GenerateSerialNumber());
         certificate = certificate.CopyWithPrivateKey(rsa);
         return certificate;
     }

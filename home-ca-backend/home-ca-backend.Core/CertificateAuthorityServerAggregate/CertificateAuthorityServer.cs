@@ -62,7 +62,6 @@ public class CertificateAuthorityServer
     {
         var rootCertificateAuthority = FindRoot(id);
         return rootCertificateAuthority.GetCertificateChain(id);
-        return string.Empty;
     }
 
     private CertificateAuthority FindById(CertificateAuthorityId id)
