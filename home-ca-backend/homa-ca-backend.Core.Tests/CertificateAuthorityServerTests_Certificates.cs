@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using FluentAssertions;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate.Exceptions;
@@ -154,5 +153,206 @@ public partial class CertificateAuthorityServerTests
             "root password");
         
         intermediateCertificateAuthority.PemCertificate.Should().NotBeNull();
+    }
+
+    [Fact]
+    public void GetCertificateChain_LeafIdDoesNotExist_ThrowsException()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        componentUnderTest.AddRootCertificateAuthority(new()
+        {
+            Id = rootId,
+            Name = "Root Certificate Authority"
+        });
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId, new()
+        {
+            Name = "Intermediate Certificate Authority"
+        });
+
+        componentUnderTest.Invoking(x => x.GetCertificateChain(new()))
+            .Should()
+            .Throw<UnknownLeafIdException>();
+    }
+
+    [Fact]
+    public void GetCertificateChain_RootCertificateDoesNotExist_MissingPrivateKeyException()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        CertificateAuthorityId intermediateId = new();
+        LeafId leafId = new();
+        
+        componentUnderTest.AddRootCertificateAuthority(new()
+        {
+            Id = rootId,
+            Name = "Root Certificate Authority"
+        });
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId, new()
+        {
+            Id = intermediateId,
+            Name = "Intermediate Certificate Authority"
+        });
+        componentUnderTest.AddLeaf(intermediateId, new()
+        {
+            Id = leafId,
+            Name = "docker.local"
+        });
+
+        componentUnderTest.Invoking(x => x.GetCertificateChain(leafId))
+            .Should()
+            .Throw<MissingPemCertificateException>();
+    }
+
+    [Fact]
+    public void GetCertificateChain_IntermediateCertificateMissing_ThrowsException()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        CertificateAuthorityId intermediateId = new();
+        LeafId leafId = new();
+        
+        componentUnderTest.AddRootCertificateAuthority(new()
+        {
+            Name = "Root Certificate Authority",
+            Id = rootId,
+        });
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId, new()
+        {
+            Id = intermediateId,
+            Name = "Intermediate Certificate Authority",
+        });
+        componentUnderTest.AddLeaf(intermediateId, new Leaf()
+        {
+            Id = leafId,
+            Name = "Leaf Name"
+        });
+        componentUnderTest.GenerateRootCertificate(rootId, "root password");
+        componentUnderTest.Invoking(x => x.GetCertificateChain(leafId))
+            .Should()
+            .Throw<MissingPemCertificateException>();
+    }
+
+    [Fact]
+    public void GetCertificateChain_LeafCertificateMissing_ThrowsException()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        CertificateAuthorityId intermediateId = new();
+        LeafId leafId = new();
+        
+        componentUnderTest.AddRootCertificateAuthority(new()
+        {
+            Id = rootId,
+            Name = "Root Certificate Authority"
+        });
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId, new()
+        {
+            Id = intermediateId,
+            Name = "Intermediate Certificate Authority"
+        });
+        componentUnderTest.AddLeaf(intermediateId, new()
+        {
+            Name = "docker.local",
+            Id = leafId
+        });
+        
+        componentUnderTest.GenerateRootCertificate(rootId, "root password");
+        componentUnderTest.GenerateIntermediateCertificate(intermediateId, "intermediate password", "root password");
+
+        componentUnderTest.Invoking(x => x.GetCertificateChain(leafId))
+            .Should()
+            .Throw<MissingPemCertificateException>();
+    }
+
+    [Fact]
+    public void GetCertificateChain_ChainIsReturned()
+    {
+        CertificateAuthorityServer componentUnderTest = new CertificateAuthorityServer();
+        CertificateAuthorityId rootId = new();
+        CertificateAuthorityId intermediateId = new();
+        LeafId leafId = new();
+        
+        componentUnderTest.AddRootCertificateAuthority(new()
+            {
+                Id = rootId,
+                Name = "Root Certificate Authority"
+            });
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId,
+            new()
+            {
+                Id = intermediateId,
+                Name = "Intermediate Certificate Authority"
+            });
+        componentUnderTest.AddLeaf(intermediateId, new Leaf
+        {
+            Name = "Leaf",
+            Id = leafId
+        });
+        
+        componentUnderTest.GenerateRootCertificate(rootId, "root password");
+        componentUnderTest.GenerateIntermediateCertificate(intermediateId, "intermediate password", "root password");
+        componentUnderTest.GenerateLeafCertificate(leafId, "leaf password", "intermediate password");
+
+        var certificateChain = componentUnderTest.GetCertificateChain(leafId);
+        certificateChain.Should().NotBeNull().And.NotBeEmpty();
+    }
+
+    [Fact]
+    public void GetCertificateChain_ContainsCorrectCertificates()
+    {
+        CertificateAuthorityServer componentUnderTest = new CertificateAuthorityServer();
+        CertificateAuthorityId rootId = new();
+        CertificateAuthorityId intermediateId = new();
+        LeafId leafId = new();
+        
+        componentUnderTest.AddRootCertificateAuthority(new()
+        {
+            Id = rootId,
+            Name = "Root Certificate Authority"
+        });
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId,
+            new()
+            {
+                Id = intermediateId,
+                Name = "Intermediate Certificate Authority"
+            });
+        componentUnderTest.AddLeaf(intermediateId, new Leaf
+        {
+            Name = "Leaf",
+            Id = leafId
+        });
+        
+        componentUnderTest.GenerateRootCertificate(rootId, "root password");
+        componentUnderTest.GenerateIntermediateCertificate(intermediateId, "intermediate password", "root password");
+        componentUnderTest.GenerateLeafCertificate(leafId, "leaf password", "intermediate password");
+
+        var certificateChain = componentUnderTest.GetCertificateChain(leafId);
+        var certificates = ReadCertificatesFromPem(certificateChain);
+
+        certificates.Should().HaveCount(3);
+        certificates[0].SubjectName.Name.Should().Be("CN=Leaf");
+        certificates[1].SubjectName.Name.Should().Be("CN=Intermediate Certificate Authority");
+        certificates[2].SubjectName.Name.Should().Be("CN=Root Certificate Authority");
+    }
+    
+    private List<X509Certificate2> ReadCertificatesFromPem(string pemChain)
+    {
+        var pemCertificates = pemChain.Split("-----END CERTIFICATE-----");
+
+        var x509Certificates = new List<X509Certificate2>();
+
+        foreach (var pemCertificate in pemCertificates)
+        {
+            if (!string.IsNullOrWhiteSpace(pemCertificate))
+            {
+                var certificateData = pemCertificate.Replace("-----BEGIN CERTIFICATE-----\n", "");
+
+                X509Certificate2 certificate2 = new X509Certificate2(Convert.FromBase64String(certificateData));
+                x509Certificates.Add(certificate2);
+            }
+        }
+
+        return x509Certificates;
     }
 }

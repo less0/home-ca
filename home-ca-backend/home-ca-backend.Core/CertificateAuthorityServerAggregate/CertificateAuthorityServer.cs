@@ -6,10 +6,14 @@ namespace home_ca_backend.Core.CertificateAuthorityServerAggregate;
 public class CertificateAuthorityServer
 {
     private readonly List<CertificateAuthority> _rootCertificateAuthorities = new();
-    
-    public IReadOnlyCollection<CertificateAuthority> GetRootCertificateAuthorities() => new ReadOnlyCollection<CertificateAuthority>(_rootCertificateAuthorities);
 
-    public IReadOnlyCollection<CertificateAuthority> GetIntermediateCertificateAuthorities(CertificateAuthorityId parentId)
+    public IReadOnlyCollection<CertificateAuthority> GetRootCertificateAuthorities()
+    {
+        return new ReadOnlyCollection<CertificateAuthority>(_rootCertificateAuthorities);
+    }
+
+    public IReadOnlyCollection<CertificateAuthority> GetIntermediateCertificateAuthorities(
+        CertificateAuthorityId parentId)
     {
         var parent = FindById(parentId);
         return parent.IntermediateCertificateAuthorities;
@@ -21,7 +25,8 @@ public class CertificateAuthorityServer
         _rootCertificateAuthorities.Add(certificateAuthority);
     }
 
-    public void AddIntermediateCertificateAuthority(CertificateAuthorityId parentId, CertificateAuthority certificateAuthority)
+    public void AddIntermediateCertificateAuthority(CertificateAuthorityId parentId,
+        CertificateAuthority certificateAuthority)
     {
         EnsureIsValidToBeAdded(certificateAuthority);
         var parent = FindById(parentId);
@@ -35,12 +40,38 @@ public class CertificateAuthorityServer
         parent.AddLeaf(leaf);
     }
 
+    public void GenerateRootCertificate(CertificateAuthorityId id, string password)
+    {
+        var certificateAuthority = _rootCertificateAuthorities.FirstOrDefault(ca => ca.Id.Equals(id));
+        certificateAuthority.GenerateCertificate(password);
+    }
+
+    public void GenerateIntermediateCertificate(CertificateAuthorityId id, string intermediatePassword, string password)
+    {
+        var certificateAuthority = FindParent(id);
+        certificateAuthority.GenerateIntermediateCertificate(id, intermediatePassword, password);
+    }
+
+    public void GenerateLeafCertificate(LeafId id, string leafPassword, string signingPassword)
+    {
+        var certificateAuthority = FindParent(id);
+        certificateAuthority.GenerateLeafCertificate(id, leafPassword, signingPassword);
+    }
+
+    public string GetCertificateChain(LeafId id)
+    {
+        var rootCertificateAuthority = FindRoot(id);
+        return rootCertificateAuthority.GetCertificateChain(id);
+        return string.Empty;
+    }
+
     private CertificateAuthority FindById(CertificateAuthorityId id)
     {
         return FindById(_rootCertificateAuthorities, id) ?? throw new UnknownCertificateAuthorityIdException();
     }
 
-    private CertificateAuthority? FindById(IReadOnlyCollection<CertificateAuthority> certificateAuthorities, CertificateAuthorityId id)
+    private CertificateAuthority? FindById(IReadOnlyCollection<CertificateAuthority> certificateAuthorities,
+        CertificateAuthorityId id)
     {
         var matchingCertificateAuthority = certificateAuthorities.FirstOrDefault(ca => ca.Id.Equals(id));
 
@@ -73,26 +104,8 @@ public class CertificateAuthorityServer
 
     private bool LeafExists(LeafId leafId, CertificateAuthority authority)
     {
-        return authority.Leaves.Any(leaf => leaf.Id.Equals(leafId)) 
+        return authority.Leaves.Any(leaf => leaf.Id.Equals(leafId))
                || authority.IntermediateCertificateAuthorities.Any(ca => LeafExists(leafId, ca));
-    }
-
-    public void GenerateRootCertificate(CertificateAuthorityId id, string password)
-    {
-        var certificateAuthority = _rootCertificateAuthorities.FirstOrDefault(ca => ca.Id.Equals(id));
-        certificateAuthority.GenerateCertificate(password);
-    }
-
-    public void GenerateIntermediateCertificate(CertificateAuthorityId id, string intermediatePassword, string password)
-    {
-        var certificateAuthority = FindParent(id);
-        certificateAuthority.GenerateIntermediateCertificate(id, intermediatePassword, password);
-    }
-
-    public void GenerateLeafCertificate(LeafId id, string leafPassword, string signingPassword)
-    {
-        var certificateAuthority = FindParent(id);
-        certificateAuthority.GenerateLeafCertificate(id, leafPassword, signingPassword);
     }
 
     private CertificateAuthority FindParent(CertificateAuthorityId id)
@@ -101,14 +114,15 @@ public class CertificateAuthorityServer
         {
             throw new NoIntermediateCertificateAuthorityException();
         }
-        
+
         var parent = _rootCertificateAuthorities
             .Select(ca => FindParent(id, ca))
             .FirstOrDefault(ca => ca != null);
         return parent ?? throw new UnknownCertificateAuthorityIdException();
     }
 
-    private CertificateAuthority? FindParent(CertificateAuthorityId id, CertificateAuthority currentCertificateAuthority)
+    private CertificateAuthority? FindParent(CertificateAuthorityId id,
+        CertificateAuthority currentCertificateAuthority)
     {
         var matchingCertificateAuthority =
             currentCertificateAuthority.IntermediateCertificateAuthorities.FirstOrDefault(ca => ca.Id.Equals(id));
@@ -116,7 +130,7 @@ public class CertificateAuthorityServer
         {
             return currentCertificateAuthority;
         }
-        
+
         return currentCertificateAuthority.IntermediateCertificateAuthorities.Select(ca => FindParent(id, ca))
             .FirstOrDefault(ca => ca != null);
     }
@@ -138,5 +152,11 @@ public class CertificateAuthorityServer
         return currentCertificateAuthority.IntermediateCertificateAuthorities
             .Select(ca => FindParent(id, ca))
             .FirstOrDefault(ca => ca != null);
+    }
+
+    private CertificateAuthority FindRoot(LeafId id)
+    {
+        return _rootCertificateAuthorities.FirstOrDefault(ca => ca.IsParentOf(id))
+            ?? throw new UnknownLeafIdException();
     }
 }

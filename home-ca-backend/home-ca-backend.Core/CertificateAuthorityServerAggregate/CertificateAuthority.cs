@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using home_ca_backend.Core.CertificateAuthorityServerAggregate.Exceptions;
 
 namespace home_ca_backend.Core.CertificateAuthorityServerAggregate;
 
@@ -39,7 +40,7 @@ public class CertificateAuthority
         
         var certificate =
             certificateRequest.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1), DateTimeOffset.UtcNow.AddYears(10));
-        PemCertificate = certificate.GetPublicKeyString();
+        PemCertificate = certificate.ExportCertificatePem();
 
         EncryptedCertificate = certificate.Export(X509ContentType.Pfx, password);
     }
@@ -69,9 +70,43 @@ public class CertificateAuthority
         request.CertificateExtensions.Add(new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
         request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.CrlSign | X509KeyUsageFlags.KeyCertSign, critical: false));
         var certificate = request.Create(signingCertificate, DateTimeOffset.UtcNow.AddDays(-1),
-            DateTimeOffset.UtcNow.AddDays(365), SerialNumberGenerator.GenerateSerialNumber());
+            DateTimeOffset.UtcNow.AddYears(2), SerialNumberGenerator.GenerateSerialNumber());
         certificate = certificate.CopyWithPrivateKey(rsa);
         EncryptedCertificate = certificate.Export(X509ContentType.Pfx, intermediatePassword);
         PemCertificate = certificate.ExportCertificatePem();
+    }
+
+    public string GetCertificateChain(LeafId id)
+    {
+        if (PemCertificate == null)
+        {
+            throw new MissingPemCertificateException();
+        }
+
+        if (HasLeafWithId(id))
+        {
+            var leaf = _leaves.First(leaf => leaf.Id.Equals(id));
+            if (leaf.PemCertificate == null)
+            {
+                throw new MissingPemCertificateException();
+            }
+
+            return $"{leaf.PemCertificate}\n{PemCertificate}";
+        }
+
+        var remainingCertificateChain = _intermediateCertificateAuthorities.FirstOrDefault(ca => ca.IsParentOf(id)).GetCertificateChain(id);
+        return $"{remainingCertificateChain}\n{PemCertificate}";
+    }
+
+    private bool HasLeafWithId(LeafId id)
+    {
+        return _leaves.Any(leaf => leaf.Id.Equals(id));
+    }
+
+    internal bool IsParentOf(LeafId id)
+    {
+        return _leaves.Any(leaf => leaf.Id.Equals(id))
+               || _intermediateCertificateAuthorities.Any(ca => ca.IsParentOf(id));
+
     }
 }
