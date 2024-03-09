@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Core", "hom
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "homa-ca-backend.Core.Tests", "homa-ca-backend.Core.Tests\homa-ca-backend.Core.Tests.csproj", "{76E13518-43E4-45F1-AF95-00680D692DF8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Database", "home-ca-backend.Database\home-ca-backend.Database.csproj", "{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{76E13518-43E4-45F1-AF95-00680D692DF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{76E13518-43E4-45F1-AF95-00680D692DF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{76E13518-43E4-45F1-AF95-00680D692DF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
