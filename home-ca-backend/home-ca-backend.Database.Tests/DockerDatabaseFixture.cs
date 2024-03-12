@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace home_ca_backend.Database.Tests;
 
+// ReSharper disable once ClassNeverInstantiated.Global
 public class DockerDatabaseFixture : IDisposable
 {
     private readonly string _dockerContainerName = Guid.NewGuid().ToString().Replace("-", "");
@@ -15,7 +16,7 @@ public class DockerDatabaseFixture : IDisposable
             Arguments =
                 $"run --env=ACCEPT_EULA=Y --env=MSSQL_SA_PASSWORD=2Pq93JS! --env=MSSQL_PID=Express -p {Constants.Port}:1433 --name {_dockerContainerName} -d mcr.microsoft.com/mssql/server:2022-latest"
         });
-        process.WaitForExit();
+        process!.WaitForExit();
         process.ExitCode.Should().Be(0);
 
         RawDatabaseAccess rawDatabaseAccess = new();

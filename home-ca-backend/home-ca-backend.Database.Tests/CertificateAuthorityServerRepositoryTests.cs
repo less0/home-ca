@@ -13,7 +13,7 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
     {
         CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
         CertificateAuthorityServer server = new CertificateAuthorityServer();
-        var certificateAuthority = new CertificateAuthority
+        CertificateAuthority certificateAuthority = new()
         {
             Name = "Root Certificate Authority"
         };
