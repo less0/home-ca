@@ -20,7 +20,7 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
         server.AddRootCertificateAuthority(certificateAuthority);
         componentUnderTest.Save(server);
 
-        _rawDatabaseAccess.GetReferenceValueByTableAndId<string>("CertificateAuthority", certificateAuthority.Id.Guid, "Name")
+        _rawDatabaseAccess.GetReferenceValueByTableAndId<string>("CertificateAuthority", certificateAuthority.Id, "Name")
             .Should().Be("Root Certificate Authority");
     }
 
@@ -36,8 +36,34 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
         server.AddRootCertificateAuthority(rootCertificateAuthority);
         componentUnderTest.Save(server);
 
-        _rawDatabaseAccess.GetValueByTableAndId<Guid>("CertificateAuthority", rootCertificateAuthority.Id.Guid,
+        _rawDatabaseAccess.GetValueByTableAndId<Guid>("CertificateAuthority", rootCertificateAuthority.Id,
                 "CertificateAuthorityId")
             .Should().Be(null);
+    }
+
+    [Fact]
+    public void Save_IntermediateIsSaved()
+    {
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
+        CertificateAuthorityServer server = new();
+        CertificateAuthorityId rootCertificateAuthorityId = new();
+        CertificateAuthorityId intermediateCertificateAuthorityId = new();
+        
+        server.AddRootCertificateAuthority(new()
+        {
+            Id = rootCertificateAuthorityId,
+            Name = "Root"
+        });
+        server.AddIntermediateCertificateAuthority(rootCertificateAuthorityId,
+            new()
+            {
+                Id = intermediateCertificateAuthorityId,
+                Name = "Intermediate"
+            });
+        componentUnderTest.Save(server);
+
+        _rawDatabaseAccess
+            .GetReferenceValueByTableAndId<string>("CertificateAuthority", intermediateCertificateAuthorityId, "Name")
+            .Should().Be("Intermediate");
     }
 }

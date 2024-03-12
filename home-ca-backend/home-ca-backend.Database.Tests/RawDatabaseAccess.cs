@@ -1,4 +1,5 @@
-﻿using home_ca_backend.Core.CertificateAuthorityServerAggregate;
+﻿using home_ca_backend.Core;
+using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using Microsoft.Data.SqlClient;
 
 namespace home_ca_backend.Database.Tests;
@@ -30,7 +31,7 @@ public class RawDatabaseAccess
         }
     }
 
-    public T? GetReferenceValueByTableAndId<T>(string tableName, Guid id, string columnName)
+    public T? GetReferenceValueByTableAndId<T>(string tableName, Id id, string columnName)
         where T : class
     {
         using SqlConnection connection = new(Constants.DatabaseConnectionString);
@@ -38,7 +39,7 @@ public class RawDatabaseAccess
 
         connection.Open();
         command.CommandText = $"SELECT {columnName} FROM {tableName} WHERE Id=@id";
-        command.Parameters.AddWithValue("id", id);
+        command.Parameters.AddWithValue("id", id.Guid);
 
         var result = command.ExecuteScalar();
         return result is DBNull
@@ -46,7 +47,7 @@ public class RawDatabaseAccess
             : result as T;
     }
     
-    public T? GetValueByTableAndId<T>(string tableName, Guid id, string columnName)
+    public T? GetValueByTableAndId<T>(string tableName, Id id, string columnName)
         where T : struct
     {
         using SqlConnection connection = new(Constants.DatabaseConnectionString);
@@ -54,7 +55,7 @@ public class RawDatabaseAccess
 
         connection.Open();
         command.CommandText = $"SELECT {columnName} FROM {tableName} WHERE Id=@id";
-        command.Parameters.AddWithValue("id", id);
+        command.Parameters.AddWithValue("id", id.Guid);
 
         var result = command.ExecuteScalar();
         return result is DBNull
