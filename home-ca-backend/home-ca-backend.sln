@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "homa-ca-backend.Core.Tests"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Database", "home-ca-backend.Database\home-ca-backend.Database.csproj", "{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Database.Tests", "home-ca-backend.Database.Tests\home-ca-backend.Database.Tests.csproj", "{B9B7C494-70C7-456E-A885-DF61ECB61D36}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9B7C494-70C7-456E-A885-DF61ECB61D36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9B7C494-70C7-456E-A885-DF61ECB61D36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9B7C494-70C7-456E-A885-DF61ECB61D36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9B7C494-70C7-456E-A885-DF61ECB61D36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
