@@ -31,14 +31,14 @@ public class RawDatabaseAccess
         }
     }
 
-    public T? GetReferenceValueByTableAndId<T>(string tableName, Id id, string columnName)
+    public T? GetReferenceValueByTableAndId<TTable, T>(Id id, string columnName)
         where T : class
     {
         using SqlConnection connection = new(Constants.DatabaseConnectionString);
         using SqlCommand command = connection.CreateCommand();
 
         connection.Open();
-        command.CommandText = $"SELECT {columnName} FROM {tableName} WHERE Id=@id";
+        command.CommandText = $"SELECT {columnName} FROM {typeof(TTable).Name} WHERE Id=@id";
         command.Parameters.AddWithValue("id", id.Guid);
 
         var result = command.ExecuteScalar();
@@ -47,14 +47,14 @@ public class RawDatabaseAccess
             : result as T;
     }
     
-    public T? GetValueByTableAndId<T>(string tableName, Id id, string columnName)
+    public T? GetValueByTableAndId<TTable, T>(Id id, string columnName)
         where T : struct
     {
         using SqlConnection connection = new(Constants.DatabaseConnectionString);
         using SqlCommand command = connection.CreateCommand();
 
         connection.Open();
-        command.CommandText = $"SELECT {columnName} FROM {tableName} WHERE Id=@id";
+        command.CommandText = $"SELECT {columnName} FROM {typeof(TTable).Name} WHERE Id=@id";
         command.Parameters.AddWithValue("id", id.Guid);
 
         var result = command.ExecuteScalar();

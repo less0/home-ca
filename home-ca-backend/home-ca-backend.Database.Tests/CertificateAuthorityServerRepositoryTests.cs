@@ -1,3 +1,4 @@
+using System.Runtime.ConstrainedExecution;
 using FluentAssertions;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using Xunit.Extensions.AssemblyFixture;
@@ -20,7 +21,7 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
         server.AddRootCertificateAuthority(certificateAuthority);
         componentUnderTest.Save(server);
 
-        _rawDatabaseAccess.GetReferenceValueByTableAndId<string>("CertificateAuthority", certificateAuthority.Id, "Name")
+        _rawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(certificateAuthority.Id, "Name")
             .Should().Be("Root Certificate Authority");
     }
 
@@ -36,7 +37,7 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
         server.AddRootCertificateAuthority(rootCertificateAuthority);
         componentUnderTest.Save(server);
 
-        _rawDatabaseAccess.GetValueByTableAndId<Guid>("CertificateAuthority", rootCertificateAuthority.Id,
+        _rawDatabaseAccess.GetValueByTableAndId<CertificateAuthority, Guid>(rootCertificateAuthority.Id,
                 "CertificateAuthorityId")
             .Should().Be(null);
     }
@@ -63,7 +64,7 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
         componentUnderTest.Save(server);
 
         _rawDatabaseAccess
-            .GetReferenceValueByTableAndId<string>("CertificateAuthority", intermediateCertificateAuthorityId, "Name")
+            .GetReferenceValueByTableAndId<CertificateAuthority, string>(intermediateCertificateAuthorityId, "Name")
             .Should().Be("Intermediate");
     }
 }
