@@ -62,4 +62,17 @@ public class RawDatabaseAccess
             ? null
             : (T)result;
     }
+
+    public void ClearDatabase()
+    {
+        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlCommand command = connection.CreateCommand();
+
+        connection.Open();
+        command.CommandText = $"DELETE FROM {nameof(CertificateAuthority)}";
+        command.ExecuteNonQuery();
+
+        command.CommandText = $"DELETE FROM {nameof(Leaf)}";
+        command.ExecuteNonQuery();
+    }
 }
