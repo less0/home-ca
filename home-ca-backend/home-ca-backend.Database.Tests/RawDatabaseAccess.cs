@@ -1,4 +1,5 @@
-﻿using home_ca_backend.Core;
+﻿using System.Data;
+using home_ca_backend.Core;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using Microsoft.Data.SqlClient;
 
@@ -74,5 +75,33 @@ public class RawDatabaseAccess
 
         command.CommandText = $"DELETE FROM {nameof(Leaf)}";
         command.ExecuteNonQuery();
+    }
+
+    public void CreateNestedCertificateAuthorities(int nesting)
+    {
+        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using var command = connection.CreateCommand();
+        command.CommandText =
+            $"INSERT INTO {nameof(CertificateAuthority)} (Id, CertificateAuthorityId, Name, CreatedAt) VALUES (@Id, @ParentId, @Name, @CreatedAt)";
+        var idParameter = command.Parameters.Add("Id", SqlDbType.UniqueIdentifier);
+        var parentIdParameter = command.Parameters.Add("ParentId", SqlDbType.UniqueIdentifier);
+        var nameParameter = command.Parameters.AddWithValue("Name", SqlDbType.Text);
+        var createdAtParameter = command.Parameters.Add("CreatedAt", SqlDbType.DateTime2);
+        
+        connection.Open();
+        Guid? parentId = null;
+        for (int level = 0; level <= nesting; level++)
+        {
+            Guid id = Guid.NewGuid();
+
+            idParameter.Value = id;
+            parentIdParameter.Value = (object?)parentId ?? DBNull.Value;
+            nameParameter.Value = $"Level {level}";
+            createdAtParameter.Value = DateTime.UtcNow;
+
+            command.ExecuteNonQuery();
+            
+            parentId = id;
+        }
     }
 }

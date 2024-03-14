@@ -14,10 +14,12 @@ public class Leaf
     public Leaf(TimeProvider timeProvider)
     {
         _timeProvider = timeProvider;
+        CreatedAt = _timeProvider.GetUtcNow();
     }
 
     public LeafId Id { get; init; } = new();
     public required string Name { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
     public byte[]? EncryptedCertificate { get; set; }
     public string? PemCertificate { get; private set; }
     public string? PemPrivateKey { get; private set; }

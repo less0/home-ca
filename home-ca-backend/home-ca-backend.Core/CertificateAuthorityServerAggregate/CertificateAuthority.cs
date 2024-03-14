@@ -18,10 +18,12 @@ public class CertificateAuthority
     public CertificateAuthority(TimeProvider timeProvider)
     {
         _timeProvider = timeProvider;
+        CreatedAt = _timeProvider.GetUtcNow();
     }
     
     public CertificateAuthorityId Id { get; init; } = new();
     public required string Name { get; init; }
+    public DateTimeOffset CreatedAt { get; init; }
 
     public IReadOnlyCollection<CertificateAuthority> IntermediateCertificateAuthorities =>
         new ReadOnlyCollection<CertificateAuthority>(_intermediateCertificateAuthorities);

@@ -1,6 +1,7 @@
 using System.Runtime.ConstrainedExecution;
 using FluentAssertions;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
+using NSubstitute;
 using Xunit.Extensions.AssemblyFixture;
 
 namespace home_ca_backend.Database.Tests;
@@ -41,10 +42,32 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
         };
         server.AddRootCertificateAuthority(rootCertificateAuthority);
         componentUnderTest.Save(server);
-
+        
         _rawDatabaseAccess.GetValueByTableAndId<CertificateAuthority, Guid>(rootCertificateAuthority.Id,
                 "CertificateAuthorityId")
             .Should().Be(null);
+    }
+
+    [Fact]
+    public void Save_CertificateAuthoritiesAreStoredWithTheirRespectiveAddedDatetime()
+    {
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
+        CertificateAuthorityServer server = new();
+        CertificateAuthorityId certificateAuthorityId = new();
+        DateTimeOffset createdAt = DateTimeOffset.FromUnixTimeSeconds(Random.Shared.NextInt64(253402300799));
+        var timeProvider = Substitute.For<TimeProvider>();
+        timeProvider.GetUtcNow().Returns(createdAt);
+        CertificateAuthority certificateAuthority = new(timeProvider)
+        {
+            Id = certificateAuthorityId,
+            Name = "CA"
+        };
+        server.AddRootCertificateAuthority(certificateAuthority);
+        componentUnderTest.Save(server);
+
+        _rawDatabaseAccess
+            .GetValueByTableAndId<CertificateAuthority, DateTimeOffset>(certificateAuthorityId, "CreatedAt")
+            .Should().Be(createdAt);
     }
 
     [Fact]
@@ -95,55 +118,16 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
         componentUnderTest = new(DatabaseContextFactory.Create());
         CertificateAuthorityServer loadedServer = componentUnderTest.Load();
 
-        var loadedCertificateAuthorities = loadedServer.GetRootCertificateAuthorities();
-        loadedCertificateAuthorities.Should().HaveCount(1);
-        loadedCertificateAuthorities.First().IntermediateCertificateAuthorities.Should().HaveCount(1);
+        loadedServer.GetNestingDepth().Should().Be(1);
     }
 
     [Fact]
     public void Load_IntermediateCertificateAuthoritiesAreLoaded_Nested()
     {
-        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
-        CertificateAuthorityServer server = new();
-        CertificateAuthorityId firstRootId = new();
-        CertificateAuthorityId secondRootId = new();
-        CertificateAuthorityId firstIntermediateId = new();
-        CertificateAuthorityId secondIntermediateId = new();
+        _rawDatabaseAccess.CreateNestedCertificateAuthorities(nesting: 3);
         
-        server.AddRootCertificateAuthority(new()
-        {
-            Id = firstRootId,
-            Name = "First root"
-        });
-        server.AddRootCertificateAuthority(new()
-        {
-            Id = secondRootId,
-            Name = "Second root"
-        });
-        server.AddIntermediateCertificateAuthority(secondRootId,
-            new()
-            {
-                Id = firstIntermediateId,
-                Name = "First intermediate"
-            });
-        server.AddIntermediateCertificateAuthority(firstIntermediateId,
-            new()
-            {
-                Id = secondIntermediateId,
-                Name = "Nested intermediate"
-            });
-        componentUnderTest.Save(server);
-
-        componentUnderTest = new(DatabaseContextFactory.Create());
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
         var loadedServer = componentUnderTest.Load();
-        var loadedCertificateAuthorities = loadedServer.GetRootCertificateAuthorities();
-        loadedCertificateAuthorities.Should().HaveCount(2);
-        var nestedIntermediateCertificateAuthority =
-            loadedCertificateAuthorities.First(ca => ca.Id.Equals(secondRootId))
-                .IntermediateCertificateAuthorities
-                .First()
-                .IntermediateCertificateAuthorities
-                .First();
-        nestedIntermediateCertificateAuthority.Id.Should().Be(secondIntermediateId);
+        loadedServer.GetNestingDepth().Should().Be(3);
     }
 }
