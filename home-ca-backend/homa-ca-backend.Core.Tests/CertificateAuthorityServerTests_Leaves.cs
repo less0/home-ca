@@ -25,7 +25,7 @@ public partial class CertificateAuthorityServerTests
         componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
         componentUnderTest.AddLeaf(rootId, leaf);
 
-        rootCertificateAuthority.Leaves.Should().Contain(leaf);
+        rootCertificateAuthority.Leafs.Should().Contain(leaf);
     }
 
     [Fact]
@@ -44,8 +44,8 @@ public partial class CertificateAuthorityServerTests
 
         componentUnderTest.AddLeaf(intermediateId, leaf);
 
-        rootCertificateAuthority.Leaves.Should().NotContain(leaf);
-        intermediateCertificateAuthority.Leaves.Should().Contain(leaf);
+        rootCertificateAuthority.Leafs.Should().NotContain(leaf);
+        intermediateCertificateAuthority.Leafs.Should().Contain(leaf);
     }
 
     [Fact]
@@ -64,8 +64,8 @@ public partial class CertificateAuthorityServerTests
 
         componentUnderTest.AddLeaf(rootId1, leaf);
 
-        rootCertificateAuthority1.Leaves.Should().Contain(leaf);
-        rootCertificateAuthority2.Leaves.Should().NotContain(leaf);
+        rootCertificateAuthority1.Leafs.Should().Contain(leaf);
+        rootCertificateAuthority2.Leafs.Should().NotContain(leaf);
     }
 
     [Fact]
@@ -86,9 +86,9 @@ public partial class CertificateAuthorityServerTests
         componentUnderTest.AddIntermediateCertificateAuthority(intermediateId1, intermediateCertificateAuthority2);
         componentUnderTest.AddLeaf(intermediateId2, leaf);
 
-        rootCertificateAuthority.Leaves.Should().NotContain(leaf);
-        intermediateCertificateAuthority1.Leaves.Should().NotContain(leaf);
-        intermediateCertificateAuthority2.Leaves.Should().Contain(leaf);
+        rootCertificateAuthority.Leafs.Should().NotContain(leaf);
+        intermediateCertificateAuthority1.Leafs.Should().NotContain(leaf);
+        intermediateCertificateAuthority2.Leafs.Should().Contain(leaf);
     }
 
     [Fact]
@@ -130,8 +130,8 @@ public partial class CertificateAuthorityServerTests
 
         Assert.Throws<DuplicateLeafIdException>(() => componentUnderTest.AddLeaf(rootId, leaf2));
 
-        root.Leaves.Should().Contain(leaf1);
-        root.Leaves.Should().NotContain(leaf2);
+        root.Leafs.Should().Contain(leaf1);
+        root.Leafs.Should().NotContain(leaf2);
     }
 
     [Fact]
@@ -172,6 +172,6 @@ public partial class CertificateAuthorityServerTests
         Assert.Throws<DuplicateLeafIdException>(() => componentUnderTest.AddLeaf(rootId2, leaf2));
 
         // Note: Assert that Leaf2 was not added if your code supports it
-        root2.Leaves.Should().NotContain(leaf2);
+        root2.Leafs.Should().NotContain(leaf2);
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using home_ca_backend.Database;
 
@@ -11,9 +12,11 @@ using home_ca_backend.Database;
 namespace home_ca_backend.Database.Migrations
 {
     [DbContext(typeof(CertificateAuthorityContext))]
-    partial class CertificateAuthorityContextModelSnapshot : ModelSnapshot
+    [Migration("20240315082927_RenameLeafs")]
+    partial class RenameLeafs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

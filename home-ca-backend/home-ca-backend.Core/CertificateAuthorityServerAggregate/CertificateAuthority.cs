@@ -9,7 +9,7 @@ public class CertificateAuthority
 {
     private readonly TimeProvider _timeProvider;
     private readonly List<CertificateAuthority> _intermediateCertificateAuthorities = new();
-    private readonly List<Leaf> _leaves = new();
+    private readonly List<Leaf> _leafs = new();
     
     public CertificateAuthority()
         : this(TimeProvider.System)
@@ -28,7 +28,7 @@ public class CertificateAuthority
     public IReadOnlyCollection<CertificateAuthority> IntermediateCertificateAuthorities =>
         new ReadOnlyCollection<CertificateAuthority>(_intermediateCertificateAuthorities);
 
-    public IReadOnlyCollection<Leaf> Leaves => new ReadOnlyCollection<Leaf>(_leaves);
+    public IReadOnlyCollection<Leaf> Leafs => new ReadOnlyCollection<Leaf>(_leafs);
     public string? PemCertificate { get; private set; }
     public byte[]? EncryptedCertificate { get; private set; }
     public string? PemPrivateKey { get; private set; }
@@ -40,7 +40,7 @@ public class CertificateAuthority
 
     internal void AddLeaf(Leaf leaf)
     {
-        _leaves.Add(leaf);
+        _leafs.Add(leaf);
     }
 
     internal void GenerateCertificate(string password)
@@ -59,7 +59,7 @@ public class CertificateAuthority
 
     public void GenerateLeafCertificate(LeafId id, string leafPassword, string signingCertificatePassword)
     {
-        var leaf = _leaves.First(leaf => leaf.Id.Equals(id));
+        var leaf = _leafs.First(leaf => leaf.Id.Equals(id));
         X509Certificate2 signingCertificate = GetSigningCertificate(signingCertificatePassword);
         leaf.GenerateSignedCertificate(leafPassword, signingCertificate);
     }
@@ -140,12 +140,12 @@ public class CertificateAuthority
 
     private bool HasLeafWithId(LeafId id)
     {
-        return _leaves.Any(leaf => leaf.Id.Equals(id));
+        return _leafs.Any(leaf => leaf.Id.Equals(id));
     }
 
     private string GetLeafPemCertificate(LeafId id)
     {
-        var leaf = _leaves.First(leaf => leaf.Id.Equals(id));
+        var leaf = _leafs.First(leaf => leaf.Id.Equals(id));
         var leafPemCertificate = leaf.PemCertificate;
         if (leafPemCertificate == null)
         {

@@ -103,7 +103,7 @@ public class CertificateAuthorityServer
 
     private bool LeafExists(LeafId leafId, CertificateAuthority authority)
     {
-        return authority.Leaves.Any(leaf => leaf.Id.Equals(leafId))
+        return authority.Leafs.Any(leaf => leaf.Id.Equals(leafId))
                || authority.IntermediateCertificateAuthorities.Any(ca => LeafExists(leafId, ca));
     }
 
@@ -143,7 +143,7 @@ public class CertificateAuthorityServer
 
     private CertificateAuthority? FindParent(LeafId id, CertificateAuthority currentCertificateAuthority)
     {
-        if (currentCertificateAuthority.Leaves.Any(leaf => leaf.Id.Equals(id)))
+        if (currentCertificateAuthority.Leafs.Any(leaf => leaf.Id.Equals(id)))
         {
             return currentCertificateAuthority;
         }
