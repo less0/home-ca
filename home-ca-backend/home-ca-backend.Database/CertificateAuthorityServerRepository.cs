@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace home_ca_backend.Database;
 
-public class CertificateAuthorityServerRepository(CertificateAuthorityContext certificateAuthorityContext)
+public class CertificateAuthorityServerRepository(CertificateAuthorityContext certificateAuthorityContext) : ICertificateAuthorityServerRepository
 {
     public void Save(CertificateAuthorityServer server)
     {
-        foreach (var certificateAuthority in server.GetRootCertificateAuthorities())
+        foreach (var certificateAuthority in server.GetRootCertificateAuthorities().Where(IsNewEntry))
         {
             certificateAuthorityContext.Add(certificateAuthority);
         }
@@ -40,5 +40,11 @@ public class CertificateAuthorityServerRepository(CertificateAuthorityContext ce
         {
             LoadIntermediateRecursively(intermediateCertificateAuthority);
         }
+    }
+
+    private bool IsNewEntry(CertificateAuthority certificateAuthority)
+    {
+        var entry = certificateAuthorityContext.Entry(certificateAuthority);
+        return entry.State == EntityState.Detached;
     }
 }

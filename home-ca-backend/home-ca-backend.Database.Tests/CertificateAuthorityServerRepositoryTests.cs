@@ -165,4 +165,23 @@ public partial class CertificateAuthorityServerRepositoryTests : IAssemblyFixtur
             .First(ca => ca.Id.Guid == id)
             .PemPrivateKey.Should().Be("PRIVATE KEY");
     }
+
+    [Fact]
+    public void Save_AddedRootCertificateAuthoritiesAreSaved()
+    {
+        _rawDatabaseAccess.CreateRootCertificateAuthorityWithCertificate(Guid.NewGuid(), "Root I", "CERTIFICATE");
+
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
+        var loadedServer = componentUnderTest.Load();
+        CertificateAuthorityId addedRootId = new();
+        loadedServer.AddRootCertificateAuthority(new()
+        {
+            Name = "Root II",
+            Id = addedRootId
+        });
+        componentUnderTest.Save(loadedServer);
+
+        _rawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(addedRootId, "Name")
+            .Should().Be("Root II");
+    }
 }

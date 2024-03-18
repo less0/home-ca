@@ -70,10 +70,10 @@ public class RawDatabaseAccess
         using SqlCommand command = connection.CreateCommand();
 
         connection.Open();
-        command.CommandText = $"DELETE FROM {nameof(CertificateAuthority)}";
-        command.ExecuteNonQuery();
-
         command.CommandText = $"DELETE FROM {nameof(Leaf)}";
+        command.ExecuteNonQuery();
+        
+        command.CommandText = $"DELETE FROM {nameof(CertificateAuthority)}";
         command.ExecuteNonQuery();
     }
 
