@@ -104,4 +104,35 @@ public class RawDatabaseAccess
             parentId = id;
         }
     }
+
+    public void CreateRootCertificateAuthorityWithCertificate(Guid id, string name, string certificate)
+    {
+        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using var command = connection.CreateCommand();
+        command.CommandText = $"INSERT INTO {nameof(CertificateAuthority)} (Id, Name, CreatedAt, PemCertificate) " +
+                              $"VALUES (@Id, @Name, @CreatedAt, @PemCertificate)";
+        command.Parameters.AddWithValue("Id", id);
+        command.Parameters.AddWithValue("Name", name);
+        command.Parameters.AddWithValue("CreatedAt", DateTime.UtcNow);
+        command.Parameters.AddWithValue("PemCertificate", certificate);
+        connection.Open();
+
+        command.ExecuteNonQuery();
+    }
+
+    public void CreateRootCertificateAuthorityWithPrivateKey(Guid id, string name, string privateKey)
+    {
+        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"INSERT INTO {nameof(CertificateAuthority)} (Id, Name, CreatedAt, PemPrivateKey) " +
+                              $"VALUES (@Id, @Name, @CreatedAt, @PemPrivateKey)";
+        command.Parameters.AddWithValue("Id", id);
+        command.Parameters.AddWithValue("Name", name);
+        command.Parameters.AddWithValue("CreatedAt", DateTime.UtcNow);
+        command.Parameters.AddWithValue("PemPrivateKey", privateKey);
+        connection.Open();
+        
+        command.ExecuteNonQuery();
+    }
 }

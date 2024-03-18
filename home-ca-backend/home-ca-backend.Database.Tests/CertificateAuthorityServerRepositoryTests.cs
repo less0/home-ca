@@ -1,4 +1,3 @@
-using System.Runtime.ConstrainedExecution;
 using FluentAssertions;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using NSubstitute;
@@ -129,5 +128,38 @@ public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<Docker
         CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
         var loadedServer = componentUnderTest.Load();
         loadedServer.GetNestingDepth().Should().Be(3);
+    }
+
+    [Fact]
+    public void Load_CertificateAuthoritiesAreLoadedWithCertificates()
+    {
+        // For this test it should be irrelevant whether the certificate text is a real PEM certificate, hence a dummy
+        // text is used to simplify the test.
+        var id = Guid.NewGuid();
+        _rawDatabaseAccess.CreateRootCertificateAuthorityWithCertificate(id, "Root I", "CERTIFICATE");
+
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
+        var loadedServer = componentUnderTest.Load();
+
+        loadedServer.GetRootCertificateAuthorities()
+            .First(ca => ca.Id.Guid == id)
+            .PemCertificate.Should().Be(
+                "CERTIFICATE");
+    }
+
+    [Fact]
+    public void Load_CertificateAuthoritiesAreLoadedWithPrivateKeys()
+    {
+        // For this test it should be irrelevant whether the private key text is a real PEM private key, hence a dummy
+        // text is used to simplify the test.
+        var id = Guid.NewGuid();
+        _rawDatabaseAccess.CreateRootCertificateAuthorityWithPrivateKey(id, "Root I", "PRIVATE KEY");
+
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
+        var loadedServer = componentUnderTest.Load();
+
+        loadedServer.GetRootCertificateAuthorities()
+            .First(ca => ca.Id.Guid == id)
+            .PemPrivateKey.Should().Be("PRIVATE KEY");
     }
 }
