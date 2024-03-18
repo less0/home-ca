@@ -5,7 +5,10 @@ using Xunit.Extensions.AssemblyFixture;
 
 namespace home_ca_backend.Database.Tests;
 
-public class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<DockerDatabaseFixture>
+/// <summary>
+/// Tests for <see cref="CertificateAuthorityServerRepository"/>.
+/// </summary>
+public partial class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<DockerDatabaseFixture>
 {
     private readonly RawDatabaseAccess _rawDatabaseAccess = new();
 
