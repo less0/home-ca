@@ -184,4 +184,31 @@ public partial class CertificateAuthorityServerRepositoryTests : IAssemblyFixtur
         _rawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(addedRootId, "Name")
             .Should().Be("Root II");
     }
+
+    [Fact]
+    public void Save_AddedIntermediateCertificateAuthorityIsSaved()
+    {
+        CertificateAuthorityId intermediateId = new();
+        var rootCertificateAuthorityId = Guid.NewGuid();
+        _rawDatabaseAccess.CreateRootCertificateAuthority(rootCertificateAuthorityId, "MyCA");
+        _rawDatabaseAccess.CreateCertificateForRootCertificateAuthority(rootCertificateAuthorityId, "123456");
+
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
+        var server = componentUnderTest.Load();
+        server.AddIntermediateCertificateAuthority(new(rootCertificateAuthorityId), new CertificateAuthority()
+        {
+            Id = intermediateId,
+            Name = "Intermediate"
+        });
+        server.GenerateIntermediateCertificate(intermediateId, "000000", "123456");
+        componentUnderTest.Save(server);
+
+        _rawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(intermediateId, "PemCertificate")
+            .Should().StartWith("-----BEGIN CERTIFICATE-----\n");
+        _rawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(intermediateId, "PemPrivateKey")
+            .Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+        _rawDatabaseAccess
+            .GetReferenceValueByTableAndId<CertificateAuthority, byte[]>(intermediateId, "EncryptedCertificate")
+            .Should().NotBeNull().And.NotBeEmpty();
+    }
 }

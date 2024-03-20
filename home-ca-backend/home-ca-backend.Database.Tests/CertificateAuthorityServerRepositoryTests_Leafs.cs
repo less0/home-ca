@@ -48,4 +48,57 @@ public partial class CertificateAuthorityServerRepositoryTests
         _rawDatabaseAccess.GetReferenceValueByTableAndId<Leaf, string>(leafId3, "Name")
             .Should().Be("Leaf 3");
     }
+
+    [Fact]
+    public void Save_LeafsAreSavedWithTheirCertificate()
+    {
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
+        CertificateAuthorityServer server = new();
+        CertificateAuthorityId certificateAuthorityId = new();
+        LeafId leafId = new();
+        
+        server.AddRootCertificateAuthority(new()
+        {
+            Id = certificateAuthorityId,
+            Name = "Root"
+        });
+        server.AddLeaf(certificateAuthorityId,
+            new()
+            {
+                Id = leafId,
+                Name = "Leaf"
+            });
+        server.GenerateRootCertificate(certificateAuthorityId, "root password");
+        server.GenerateLeafCertificate(leafId, "leaf password", "root password");
+        
+        componentUnderTest.Save(server);
+
+        _rawDatabaseAccess.GetReferenceValueByTableAndId<Leaf, string>(leafId, nameof(Leaf.PemCertificate))
+            .Should().StartWith("-----BEGIN CERTIFICATE-----\n");
+        _rawDatabaseAccess.GetReferenceValueByTableAndId<Leaf, string>(leafId, nameof(Leaf.PemPrivateKey))
+            .Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+    }
+
+    [Fact]
+    public void Load_LeafsAreLoadedCorrectly()
+    {
+        var certificateAuthorityId = Guid.NewGuid();
+        var leafId = Guid.NewGuid();
+        
+        _rawDatabaseAccess.CreateRootCertificateAuthority(certificateAuthorityId, "Root CA");
+        _rawDatabaseAccess.CreateCertificateForRootCertificateAuthority(certificateAuthorityId);
+        _rawDatabaseAccess.CreateLeaf(certificateAuthorityId, leafId, "Leaf");
+        _rawDatabaseAccess.CreateCertificateForLeaf(leafId, "012345", "123456");
+
+        CertificateAuthorityServerRepository componentUnderTest = new(DatabaseContextFactory.Create());
+        var server = componentUnderTest.Load();
+
+        var leaf = server.GetRootCertificateAuthorities()
+            .First()
+            .Leafs
+            .First();
+        leaf.PemCertificate.Should().StartWith("-----BEGIN CERTIFICATE-----\n");
+        leaf.PemPrivateKey.Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+        leaf.EncryptedCertificate.Should().NotBeNull().And.NotBeEmpty();
+    }
 }

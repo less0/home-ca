@@ -24,21 +24,25 @@ public class CertificateAuthorityServerRepository(CertificateAuthorityContext ce
 
         foreach (var certificateAuthority in certificateAuthorities)
         {
-            LoadIntermediateRecursively(certificateAuthority);
+            LoadContents(certificateAuthority);
             result.AddRootCertificateAuthority(certificateAuthority);
         }
 
         return result;
     }
 
-    private void LoadIntermediateRecursively(CertificateAuthority certificateAuthority)
+    private void LoadContents(CertificateAuthority certificateAuthority)
     {
+        certificateAuthorityContext.Entry(certificateAuthority)
+            .Collection(ca => ca.Leafs)
+            .Load();
+        
         certificateAuthorityContext.Entry(certificateAuthority)
             .Collection(ca => ca.IntermediateCertificateAuthorities)
             .Load();
         foreach (var intermediateCertificateAuthority in certificateAuthority.IntermediateCertificateAuthorities)
         {
-            LoadIntermediateRecursively(intermediateCertificateAuthority);
+            LoadContents(intermediateCertificateAuthority);
         }
     }
 
