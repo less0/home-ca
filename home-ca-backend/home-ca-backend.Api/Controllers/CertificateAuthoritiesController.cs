@@ -1,4 +1,6 @@
 ﻿using home_ca_backend.Api.Model;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace home_ca_backend.Api.Controllers;
@@ -7,6 +9,7 @@ namespace home_ca_backend.Api.Controllers;
 public class CertificateAuthoritiesController : Controller
 {
     [HttpGet("/cas")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public ActionResult GetCertificateAuthorities([FromQuery] bool root = false)
     {
         return Ok(new List<CertificateAuthority>
