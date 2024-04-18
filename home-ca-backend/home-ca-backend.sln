@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Api.Tests",
 		{8014AB62-DF56-430C-B801-E177001BCA66} = {8014AB62-DF56-430C-B801-E177001BCA66}
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Application", "home-ca-backend.Application\home-ca-backend.Application.csproj", "{9669D8CA-0371-4B28-BC96-B0726E71E52D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,5 +53,9 @@ Global
 		{B7856D64-3EB7-48F8-8DE5-8153870D130F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7856D64-3EB7-48F8-8DE5-8153870D130F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7856D64-3EB7-48F8-8DE5-8153870D130F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9669D8CA-0371-4B28-BC96-B0726E71E52D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9669D8CA-0371-4B28-BC96-B0726E71E52D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9669D8CA-0371-4B28-BC96-B0726E71E52D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9669D8CA-0371-4B28-BC96-B0726E71E52D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

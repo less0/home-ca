@@ -1,4 +1,6 @@
 ﻿using home_ca_backend.Api.Model;
+using home_ca_backend.Application;
+using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,36 +8,22 @@ using Microsoft.AspNetCore.Mvc;
 namespace home_ca_backend.Api.Controllers;
 
 [Controller]
-public class CertificateAuthoritiesController : Controller
+public class CertificateAuthoritiesController(IMediator mediator) : Controller
 {
+    private IMediator _mediator = mediator;
+
     [HttpGet("/cas")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public ActionResult GetCertificateAuthorities([FromQuery] bool root = false)
+    public async Task<ActionResult> GetCertificateAuthorities([FromQuery] bool root = false)
     {
-        return Ok(new List<CertificateAuthority>
+        var response = await _mediator.Send(new GetCertificateAuthorities());
+        return Ok(response.Select(x => new CertificateAuthority
         {
-            new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                IsRoot = true,
-                Name = "Example Root CA",
-                HasChildren = (Random.Shared.Next(2) % 2) == 0
-            },
-            new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                IsRoot = true,
-                Name = "Second Root CA",
-                HasChildren = (Random.Shared.Next(2) % 2) == 0
-            },
-            new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                IsRoot = true,
-                Name = "Third Root CA",
-                HasChildren = (Random.Shared.Next(2) % 2) == 0
-            }
-        });
+            Id = x.Id,
+            Name = x.Name,
+            IsRoot = x.IsRoot,
+            HasChildren = false
+        }));
     }
 
     [HttpGet("/cas/{id}/children")]

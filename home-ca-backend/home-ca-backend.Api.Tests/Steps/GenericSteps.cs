@@ -24,4 +24,10 @@ public class GenericSteps
     {
         await Driver.Instance.Authenticate(username, password);
     }
+
+    [Then(@"the response is an empty array")]
+    public void ThenTheResponseIsAnEmptyArray()
+    {
+        Driver.Instance.LastResponseBody.Should().Be("[]");
+    }
 }

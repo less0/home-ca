@@ -25,6 +25,7 @@ namespace home_ca_backend.Api.Tests.Drivers
         public HttpClient? HttpClient { get; private set; }
 
         public HttpStatusCode LastStatusCode { get; set; }
+        public string LastResponseBody { get; set; }
 
         private Driver()
         {
@@ -109,6 +110,7 @@ namespace home_ca_backend.Api.Tests.Drivers
             }
             var response = await HttpClient!.SendAsync(request);
             LastStatusCode = response.StatusCode;
+            LastResponseBody = await response.Content.ReadAsStringAsync();
         }
 
         public async Task DisposeAsync()
