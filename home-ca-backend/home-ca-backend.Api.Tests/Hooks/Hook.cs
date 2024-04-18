@@ -1,8 +1,4 @@
-using System.Diagnostics;
-using System.Security.Policy;
-using FluentAssertions;
 using home_ca_backend.Api.Tests.Drivers;
-using Testcontainers.MsSql;
 
 namespace home_ca_backend.Api.Tests.Hooks
 {

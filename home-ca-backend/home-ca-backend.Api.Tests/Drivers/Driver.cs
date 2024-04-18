@@ -11,7 +11,7 @@ namespace home_ca_backend.Api.Tests.Drivers
     public class Driver
     {
         private static Driver? _instance;
-        private static IConfiguration _configuration;
+        private static IConfiguration _configuration = null!;
         
         public static Driver Instance => _instance ??= new();
         
@@ -26,7 +26,7 @@ namespace home_ca_backend.Api.Tests.Drivers
 
         public HttpStatusCode LastStatusCode { get; set; }
 
-        public Driver()
+        private Driver()
         {
             ConfigurationBuilder configurationBuilder = new();
             configurationBuilder.AddJsonFile("settings.json", false);
@@ -58,30 +58,6 @@ namespace home_ca_backend.Api.Tests.Drivers
             {
                 BaseAddress = new($"http://localhost:{KestrelPort}")
             };
-        }
-
-        public async Task SendHttpRequest(string uri)
-        {
-            HttpClient.Should().NotBeNull();
-            
-            using HttpRequestMessage request = new(HttpMethod.Get, uri);
-            if (_accessToken != null)
-            {
-                request.Headers.Authorization = new("Bearer", _accessToken);
-            }
-            var response = await HttpClient!.SendAsync(request);
-            LastStatusCode = response.StatusCode;
-        }
-
-        public async Task DisposeAsync()
-        {
-            if (_container != null)
-            {
-                await _container.DisposeAsync();
-            }
-            
-            _apiProcess?.Kill();
-            _instance = null;
         }
 
         public async Task Authenticate(string username, string password)
@@ -120,6 +96,30 @@ namespace home_ca_backend.Api.Tests.Drivers
             var jObject = JsonConvert.DeserializeObject<JObject>(content);
             _accessToken = jObject?.GetValue("access_token")?.Value<string>();
             _accessToken.Should().NotBeNull();
+        }
+
+        public async Task SendHttpRequest(string uri)
+        {
+            HttpClient.Should().NotBeNull();
+            
+            using HttpRequestMessage request = new(HttpMethod.Get, uri);
+            if (_accessToken != null)
+            {
+                request.Headers.Authorization = new("Bearer", _accessToken);
+            }
+            var response = await HttpClient!.SendAsync(request);
+            LastStatusCode = response.StatusCode;
+        }
+
+        public async Task DisposeAsync()
+        {
+            if (_container != null)
+            {
+                await _container.DisposeAsync();
+            }
+            
+            _apiProcess?.Kill();
+            _instance = null;
         }
     }
 }
