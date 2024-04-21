@@ -1,5 +1,6 @@
 using FluentAssertions;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
+using home_ca_backend.Tests.Common;
 using NSubstitute;
 using Xunit.Extensions.AssemblyFixture;
 
@@ -10,7 +11,7 @@ namespace home_ca_backend.Database.Tests;
 /// </summary>
 public partial class CertificateAuthorityServerRepositoryTests : IAssemblyFixture<DockerDatabaseFixture>
 {
-    private readonly RawDatabaseAccess _rawDatabaseAccess = new();
+    private readonly RawDatabaseAccess _rawDatabaseAccess = new(Constants.DatabaseConnectionString);
 
     public CertificateAuthorityServerRepositoryTests()
     {

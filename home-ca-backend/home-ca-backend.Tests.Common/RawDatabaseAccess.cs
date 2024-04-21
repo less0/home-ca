@@ -4,16 +4,15 @@ using System.Security.Cryptography.X509Certificates;
 using home_ca_backend.Core;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-namespace home_ca_backend.Database.Tests;
+namespace home_ca_backend.Tests.Common;
 
-public class RawDatabaseAccess
+public class RawDatabaseAccess(string connectionString)
 {
     public T? GetReferenceValueByTableAndId<TTable, T>(Id id, string columnName)
         where T : class
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using SqlCommand command = connection.CreateCommand();
 
         connection.Open();
@@ -29,7 +28,7 @@ public class RawDatabaseAccess
     public T? GetValueByTableAndId<TTable, T>(Id id, string columnName)
         where T : struct
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using SqlCommand command = connection.CreateCommand();
 
         connection.Open();
@@ -44,7 +43,7 @@ public class RawDatabaseAccess
 
     public void ClearDatabase()
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using SqlCommand command = connection.CreateCommand();
 
         connection.Open();
@@ -57,7 +56,7 @@ public class RawDatabaseAccess
 
     public void CreateNestedCertificateAuthorities(int nesting)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
         command.CommandText =
             $"INSERT INTO {nameof(CertificateAuthority)} (Id, CertificateAuthorityId, Name, CreatedAt) VALUES (@Id, @ParentId, @Name, @CreatedAt)";
@@ -85,7 +84,7 @@ public class RawDatabaseAccess
 
     public void CreateRootCertificateAuthorityWithCertificate(Guid id, string name, string certificate)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
         command.CommandText = $"INSERT INTO {nameof(CertificateAuthority)} (Id, Name, CreatedAt, PemCertificate) " +
                               $"VALUES (@Id, @Name, @CreatedAt, @PemCertificate)";
@@ -100,7 +99,7 @@ public class RawDatabaseAccess
 
     public void CreateRootCertificateAuthorityWithPrivateKey(Guid id, string name, string privateKey)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
 
         command.CommandText = $"INSERT INTO {nameof(CertificateAuthority)} (Id, Name, CreatedAt, PemPrivateKey) " +
@@ -116,7 +115,7 @@ public class RawDatabaseAccess
 
     public void CreateRootCertificateAuthority(Guid id, string name)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
 
         command.CommandText = $"INSERT INTO {nameof(CertificateAuthority)} (Id, Name, CreatedAt) " +
@@ -129,9 +128,25 @@ public class RawDatabaseAccess
         command.ExecuteNonQuery();
     }
 
+    public void CreateIntermediateCertificateAuthority(Guid parentId, Guid id, string name)
+    {
+        using SqlConnection connection = new(connectionString);
+        using var command = connection.CreateCommand();
+
+        command.CommandText = $"INSERT INTO {nameof(CertificateAuthority)} (Id, Name, CreatedAt, CertificateAuthorityId) " +
+                              $"VALUES (@Id, @Name, @CreatedAt, @ParentId)";
+        command.Parameters.AddWithValue("Id", id);
+        command.Parameters.AddWithValue("Name", name);
+        command.Parameters.AddWithValue("CreatedAt", DateTime.UtcNow);
+        command.Parameters.AddWithValue("ParentId", parentId);
+        
+        connection.Open();
+        command.ExecuteNonQuery();
+    }
+
     public void CreateCertificateForRootCertificateAuthority(Guid id, string password = "123456")
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using SqlCommand command = connection.CreateCommand();
 
         command.CommandText = $"SELECT Name FROM {nameof(CertificateAuthority)} WHERE Id=@Id";
@@ -164,7 +179,7 @@ public class RawDatabaseAccess
 
     public void CreateLeaf(Guid certificateAuthorityId, Guid leafId, string leafName)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
 
         connection.Open();
@@ -191,7 +206,7 @@ public class RawDatabaseAccess
 
     private Guid GetParentCertificateAuthorityId(Guid leafId)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
 
         connection.Open();
@@ -205,7 +220,7 @@ public class RawDatabaseAccess
 
     private string GetLeafName(Guid leafId)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
 
         connection.Open();
@@ -219,7 +234,7 @@ public class RawDatabaseAccess
 
     private X509Certificate2 LoadCertificate(Guid certificateAuthorityId, string certificateAuthorityPassword)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
         connection.Open();
         command.CommandText =
@@ -245,7 +260,7 @@ public class RawDatabaseAccess
 
     private void StoreLeafCertificate(Guid leafId, X509Certificate2 leafCertificate, string leafPassword)
     {
-        using SqlConnection connection = new(Constants.DatabaseConnectionString);
+        using SqlConnection connection = new(connectionString);
         using var command = connection.CreateCommand();
 
         connection.Open();

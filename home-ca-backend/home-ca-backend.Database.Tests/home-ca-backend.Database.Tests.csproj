@@ -29,6 +29,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\home-ca-backend.Database\home-ca-backend.Database.csproj" />
+      <ProjectReference Include="..\home-ca-backend.Tests.Common\home-ca-backend.Tests.Common.csproj" />
     </ItemGroup>
 
 </Project>
