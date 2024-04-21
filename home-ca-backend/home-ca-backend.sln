@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Api", "home
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Core", "home-ca-backend.Core\home-ca-backend.Core.csproj", "{153B7F59-CC52-4310-8FBC-C14641F36A52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "homa-ca-backend.Core.Tests", "homa-ca-backend.Core.Tests\homa-ca-backend.Core.Tests.csproj", "{76E13518-43E4-45F1-AF95-00680D692DF8}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Core.Tests", "home-ca-backend.Core.Tests\home-ca-backend.Core.Tests.csproj", "{76E13518-43E4-45F1-AF95-00680D692DF8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "home-ca-backend.Database", "home-ca-backend.Database\home-ca-backend.Database.csproj", "{CA20CC26-BF7F-4C93-9A68-0F08A229A07A}"
 EndProject
