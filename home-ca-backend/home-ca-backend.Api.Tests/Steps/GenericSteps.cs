@@ -73,4 +73,17 @@ public class GenericSteps
             array[index][property].Value<string>().Should().Be(expectedValue);
         }
     }
+
+    [Then(@"the response is an array with (.*) entry")]
+    public void ThenTheResponseIsAnArrayWithEntry(int expectedNumberOfEntries)
+    {
+        var array = JsonConvert.DeserializeObject<JArray>(Driver.Instance.LastResponseBody);
+        array.Count.Should().Be(expectedNumberOfEntries);
+    }
+
+    [Given(@"the database is empty")]
+    public void GivenTheDatabaseIsEmpty()
+    {
+        Driver.Instance.RawDatabaseAccess.ClearDatabase();
+    }
 }

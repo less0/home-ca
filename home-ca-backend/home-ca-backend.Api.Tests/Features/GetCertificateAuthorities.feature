@@ -1,4 +1,7 @@
 ﻿Feature: Get certificate authorities
+	
+Background: 
+	Given the database is empty
 
 Scenario: Returns an empty array if no certificate authorities are registered
 	Given the user "test@example.com" is authenticated with the password "t3sTpa55w0rd"
@@ -22,3 +25,18 @@ Scenario: Get certificate authorities returns root authorities in the order crea
 	    | 1     | name     | Root 2                               |
 	    | 2     | id       | fa3c4626-3efa-4cb5-9251-512c017221f3 |
 	    | 2     | name     | Root 3                               |
+     
+Scenario: Get children only returns the correct intermediate certificate authority
+	Given the following certificate authorities are registered:
+		| Id                                   | Name           | Parent                               |
+		| 14fc416f-0ad2-4402-a34c-6ad50dfe428e | Root 1         |                                      |
+		| 39bd84a0-f836-4112-8809-45a7108cb591 | Root 2         |                                      |
+		| 1236bbf7-0d4c-4b57-b0ad-f1aacf47a4d6 | Intermediate 1 | 14fc416f-0ad2-4402-a34c-6ad50dfe428e |
+		| 75a52497-8729-4bb6-a596-7df8315f917a | Intermediate 2 | 39bd84a0-f836-4112-8809-45a7108cb591 |
+		And the user "test@example.com" is authenticated with the password "t3sTpa55w0rd"
+	When the endpoint /cas/14fc416f-0ad2-4402-a34c-6ad50dfe428e/children is called
+	Then the response is an array with 1 entry
+		And the response is an array with the fields:
+			| Index | Property | Value                                |
+			| 0     | id       | 1236bbf7-0d4c-4b57-b0ad-f1aacf47a4d6 |
+			| 0     | name     | Intermediate 1                       |

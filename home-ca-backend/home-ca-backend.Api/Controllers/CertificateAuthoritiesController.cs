@@ -27,24 +27,18 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
     }
 
     [HttpGet("/cas/{id}/children")]
-    public ActionResult GetCertificateAuthoritiesChildren(string id)
+    public async Task<ActionResult> GetCertificateAuthoritiesChildren(string id)
     {
-        return Ok(new List<CertificateAuthority>
+        var response = await _mediator.Send(new GetChildrenCertificateAuthorities()
         {
-            new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                IsRoot = true,
-                Name = "Example Child CA",
-                HasChildren = (Random.Shared.Next(2) % 2) == 0
-            },
-            new()
-            {
-                Id = Guid.NewGuid().ToString(),
-                IsRoot = true,
-                Name = "Second Child CA",
-                HasChildren = (Random.Shared.Next(2) % 2) == 0
-            }
+            Id = Guid.Parse(id)
         });
+        return Ok(response.Select(x => new CertificateAuthority
+        {
+            Id = x.Id,
+            Name = x.Name,
+            IsRoot = false,
+            HasChildren = false
+        }));
     }
 }
