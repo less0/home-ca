@@ -1,5 +1,8 @@
+using home_ca_backend.Api;
 using home_ca_backend.Application;
+using home_ca_backend.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddDatabase();
 builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblyContaining<GetCertificateAuthorities>();
@@ -27,6 +31,7 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+app.Services.CreateScope().ServiceProvider.GetService<CertificateAuthorityContext>().Database.Migrate();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

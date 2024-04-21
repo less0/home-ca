@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Net;
 using FluentAssertions;
+using home_ca_backend.Tests.Common;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -27,6 +28,11 @@ namespace home_ca_backend.Api.Tests.Drivers
         public HttpStatusCode LastStatusCode { get; set; }
         public string LastResponseBody { get; set; }
 
+        public string ConnectionString { get; } =
+            $"Server=localhost,{SqlPort};User Id=sa;Password=2Pq93JS!;TrustServerCertificate=True;Database=home-ca";
+
+        public RawDatabaseAccess RawDatabaseAccess { get; set; }
+
         private Driver()
         {
             ConfigurationBuilder configurationBuilder = new();
@@ -34,6 +40,7 @@ namespace home_ca_backend.Api.Tests.Drivers
             configurationBuilder.AddJsonFile("settings.local.json", true);
             configurationBuilder.AddEnvironmentVariables();
             _configuration = configurationBuilder.Build();
+            RawDatabaseAccess = new RawDatabaseAccess(ConnectionString);
         }
 
         public async Task StartDatabaseAsync()
@@ -51,7 +58,11 @@ namespace home_ca_backend.Api.Tests.Drivers
             _apiProcess = Process.Start(new ProcessStartInfo(Path.GetFullPath("../../../../home-ca-backend.Api/bin/Debug/net8.0/home-ca-backend.Api.exe"))
             {
                 WorkingDirectory = "../../../../home-ca-backend.Api/bin/Debug/net8.0/",
-                Environment = { ["ASPNETCORE_URLS"] = $"http://*:{KestrelPort}/" }
+                Environment =
+                {
+                    ["ASPNETCORE_URLS"] = $"http://*:{KestrelPort}/",
+                    ["ConnectionStrings__(DEFAULT)"] = $"Server=localhost,{SqlPort};Database=home-ca;User Id=sa;Password=2Pq93JS!;TrustServerCertificate=True"
+                }
             });
             _apiProcess.Should().NotBeNull();
 
