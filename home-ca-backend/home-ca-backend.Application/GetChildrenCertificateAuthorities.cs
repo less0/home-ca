@@ -3,7 +3,7 @@ using MediatR;
 
 namespace home_ca_backend.Application;
 
-public class GetChildrenCertificateAuthorities : IRequest<CertificateAuthority[]>
+public class GetChildrenCertificateAuthorities : IRequest<GetChildrenCertificateAuthoritiesResponse>
 {
     public required Guid Id { get; init; }
 }

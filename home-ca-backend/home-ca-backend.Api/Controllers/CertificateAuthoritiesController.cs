@@ -33,12 +33,18 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
         {
             Id = Guid.Parse(id)
         });
-        return Ok(response.Select(x => new CertificateAuthority
+
+        return response switch
         {
-            Id = x.Id,
-            Name = x.Name,
-            IsRoot = false,
-            HasChildren = false
-        }));
+            GetChildrenCertificateAuthoritiesValidResponse validResponse => Ok(GetCertificateAuthorities(validResponse)),
+            GetChildrenCertificateAuthoritiesParentIdNotFoundResponse => NotFound(),
+            _ => StatusCode(500)
+        };
+    }
+
+    private static IEnumerable<CertificateAuthority> GetCertificateAuthorities(GetChildrenCertificateAuthoritiesValidResponse validResponse)
+    {
+        return validResponse.CertificateAuthorities.Select(x =>
+            new CertificateAuthority { Id = x.Id, Name = x.Name, IsRoot = false, HasChildren = false });
     }
 }

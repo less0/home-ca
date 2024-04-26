@@ -40,3 +40,8 @@ Scenario: Get children only returns the correct intermediate certificate authori
 			| Index | Property | Value                                |
 			| 0     | id       | 1236bbf7-0d4c-4b57-b0ad-f1aacf47a4d6 |
 			| 0     | name     | Intermediate 1                       |
+   
+Scenario: Get children returns 404 for non-existing parent ID
+	Given a valid user is authenticated
+	When the endpoint /cas/14fc416f-0ad2-4402-a34c-6ad50dfe428e/children is called
+	Then the status code should be 404
