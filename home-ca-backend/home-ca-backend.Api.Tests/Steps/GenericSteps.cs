@@ -86,4 +86,7 @@ public class GenericSteps
     {
         Driver.Instance.RawDatabaseAccess.ClearDatabase();
     }
+
+    [Given(@"a valid user is authenticated")]
+    public async Task GivenAValidUserIsAuthenticated() => await GivenTheUserIsAuthenticatedWithThePassword("test@example.com", "t3sTpa55w0rd");
 }
