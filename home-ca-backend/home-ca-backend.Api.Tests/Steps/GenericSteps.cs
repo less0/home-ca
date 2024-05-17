@@ -1,11 +1,13 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using home_ca_backend.Api.Tests.Drivers;
-using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using TechTalk.SpecFlow.Assist;
+using Reqnroll;
+using Reqnroll.Assist;
 
 namespace home_ca_backend.Api.Tests.Steps;
 
@@ -39,7 +41,7 @@ public class GenericSteps
     [Given(@"the following certificate authorities are registered:")]
     public void GivenTheFollowingCertificateAuthoritiesAreRegistered(Table table)
     {
-        foreach (TableRow tableRow in table.Rows)
+        foreach (var tableRow in table.Rows)
         {
             var id = Guid.Parse(tableRow["Id"]);
             string name = tableRow["Name"];
