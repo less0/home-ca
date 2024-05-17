@@ -1,5 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using FluentAssertions;
 using home_ca_backend.Tests.Common;
 using Microsoft.Extensions.Configuration;
@@ -55,6 +61,7 @@ namespace home_ca_backend.Api.Tests.Drivers
 
         public void StartApi()
         {
+            AutoResetEvent autoResetEvent = new AutoResetEvent(false);
             _apiProcess = Process.Start(new ProcessStartInfo(Path.GetFullPath("../../../../home-ca-backend.Api/bin/Debug/net8.0/home-ca-backend.Api.exe"))
             {
                 WorkingDirectory = "../../../../home-ca-backend.Api/bin/Debug/net8.0/",
@@ -62,14 +69,32 @@ namespace home_ca_backend.Api.Tests.Drivers
                 {
                     ["ASPNETCORE_URLS"] = $"http://*:{KestrelPort}/",
                     ["ConnectionStrings__(DEFAULT)"] = $"Server=localhost,{SqlPort};Database=home-ca;User Id=sa;Password=2Pq93JS!;TrustServerCertificate=True"
-                }
+                },
+                RedirectStandardOutput = true,
+                UseShellExecute = false
             });
             _apiProcess.Should().NotBeNull();
+            _apiProcess.OutputDataReceived += (sender, args) =>
+            {
+                if (args.Data == null)
+                {
+                    return;
+                }
+                
+                if (args.Data.Contains("Application started."))
+                {
+                    autoResetEvent.Set();
+                }
+            };
+            _apiProcess.BeginOutputReadLine();
 
             HttpClient = new()
             {
                 BaseAddress = new($"http://localhost:{KestrelPort}")
             };
+
+            autoResetEvent.WaitOne(TimeSpan.FromSeconds(30));
+            _apiProcess.CancelOutputRead();
         }
 
         public async Task Authenticate(string username, string password)
@@ -126,12 +151,17 @@ namespace home_ca_backend.Api.Tests.Drivers
 
         public async Task DisposeAsync()
         {
+            if(_apiProcess != null)
+            {
+                _apiProcess.Kill();
+                await _apiProcess.WaitForExitAsync();
+            }
+            
             if (_container != null)
             {
                 await _container.DisposeAsync();
             }
             
-            _apiProcess?.Kill();
             _instance = null;
         }
     }
