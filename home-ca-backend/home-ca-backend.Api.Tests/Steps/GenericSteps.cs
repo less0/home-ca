@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
+using System.Net.Mime;
+using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
@@ -20,10 +23,20 @@ public class GenericSteps
         await Driver.Instance.SendHttpRequest(relativeUrl);
     }
 
+    [When(@"the endpoint (.*) is called with a POST request")]
+    public Task WhenTheEndpointCasIsCalledWithApostRequest(string uri) => 
+        Driver.Instance.SendHttpPostRequest(uri, new StringContent(""));
+
     [Then("the status code should be (.*)")]
     public void ThenTheStatusCodeShouldBe(int expectedStatusCode)
     {
         Driver.Instance.LastStatusCode.Should().Be((HttpStatusCode)expectedStatusCode);
+    }
+
+    [Then(@"the status code should not be (.*)")]
+    public void ThenTheStatusCodeShouldNotBe(int notExpectedStatusCode)
+    {
+        Driver.Instance.LastStatusCode.Should().NotBe((HttpStatusCode)notExpectedStatusCode);
     }
 
     [Given(@"the user ""(.*)"" is authenticated with the password ""(.*)""")]
@@ -91,4 +104,17 @@ public class GenericSteps
 
     [Given(@"a valid user is authenticated")]
     public async Task GivenAValidUserIsAuthenticated() => await GivenTheUserIsAuthenticatedWithThePassword("test@example.com", "t3sTpa55w0rd");
+
+    [When(@"the endpoint (.*) is called with a POST request with the data")]
+    public async Task WhenTheEndpointIsCalledWithApostRequestWithTheData(string uri, Table table)
+    {
+        var jsonContent = new JObject();
+        foreach (var row in table.Rows)
+        {
+            jsonContent.Add(row["Property"], row["Value"]);
+        }
+
+        await Driver.Instance.SendHttpPostRequest(uri,
+            new StringContent(jsonContent.ToString(), Encoding.Default, MediaTypeNames.Application.Json));
+    }
 }

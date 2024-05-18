@@ -152,6 +152,21 @@ namespace home_ca_backend.Api.Tests.Drivers
             LastResponseBody = await response.Content.ReadAsStringAsync();
         }
 
+        public async Task SendHttpPostRequest(string uri, HttpContent content)
+        {
+            HttpClient.Should().NotBeNull();
+            
+            using HttpRequestMessage request = new(HttpMethod.Post, uri);
+            request.Content = content;
+            if (_accessToken != null)
+            {
+                request.Headers.Authorization = new("Bearer", _accessToken);
+            }
+            var response = await HttpClient!.SendAsync(request);
+            LastStatusCode = response.StatusCode;
+            LastResponseBody = await response.Content.ReadAsStringAsync();
+        }
+
         public async Task DisposeAsync()
         {
             if(_apiProcess != null)

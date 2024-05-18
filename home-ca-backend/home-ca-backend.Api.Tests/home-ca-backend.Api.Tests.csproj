@@ -27,6 +27,7 @@
 
     <ItemGroup>
       <None Remove="settings.json" />
+      <Content Include="Features\AddCertificateAuthorities.feature" />
       <Content Include="Features\Authentication.feature" />
       <Content Include="Features\GetCertificateAuthorities.feature" />
       <Content Include="settings.json">
