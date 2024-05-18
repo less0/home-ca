@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using home_ca_backend.Tests.Common;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -181,6 +182,28 @@ namespace home_ca_backend.Api.Tests.Drivers
             }
             
             _instance = null;
+        }
+
+        public void AssertHasRootCertificateForLastReturnedId(string expectedName)
+        {
+            CertificateAuthorityId id = new(new(LastResponseBody));
+
+            var name = RawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(id,
+                nameof(CertificateAuthority.Name));
+            var createdAt =
+                RawDatabaseAccess.GetValueByTableAndId<CertificateAuthority, DateTimeOffset>(id,
+                    nameof(CertificateAuthority.CreatedAt));
+            var privateKey =
+                RawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(id,
+                    nameof(CertificateAuthority.PemPrivateKey));
+            var certificate =
+                RawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(id,
+                    nameof(CertificateAuthority.PemCertificate));
+
+            name.Should().Be(expectedName);
+            createdAt.Should().BeCloseTo(DateTimeOffset.Now, TimeSpan.FromSeconds(10));
+            privateKey.Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+            certificate.Should().StartWith("-----BEGIN CERTIFICATE-----\n");
         }
     }
 }

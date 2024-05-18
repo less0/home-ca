@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using home_ca_backend.Api.Tests.Drivers;
+using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Reqnroll;
@@ -116,5 +117,17 @@ public class GenericSteps
 
         await Driver.Instance.SendHttpPostRequest(uri,
             new StringContent(jsonContent.ToString(), Encoding.Default, MediaTypeNames.Application.Json));
+    }
+
+    [Then(@"the response is a valid GUID")]
+    public void ThenTheResponseIsAValidGuid()
+    {
+        Guid.TryParse(Driver.Instance.LastResponseBody, out _).Should().BeTrue();
+    }
+
+    [Then(@"there is a root certificate authority ""(.*)"" with the returned GUID")]
+    public void ThenThereIsARootCertificateAuthorityWithTheReturnedGuid(string expectedName)
+    {
+        Driver.Instance.AssertHasRootCertificateForLastReturnedId(expectedName);
     }
 }

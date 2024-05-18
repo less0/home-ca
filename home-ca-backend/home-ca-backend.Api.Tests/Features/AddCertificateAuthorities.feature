@@ -15,3 +15,17 @@ Scenario: Endpoint returns a status OK (200) on a valid request
         | Property | Value                 |
         | Name     | This is a FooBar root |
     Then the status code should be 200
+    
+Scenario: Endpoint returns the GUID of the created certificate authority
+    Given a valid user is authenticated
+    When the endpoint /cas?password=123456 is called with a POST request with the data
+        | Property | Value |
+        | Name     | r007  |
+    Then the response is a valid GUID
+    
+Scenario: Root certificate authority is created on successful request
+    Given a valid user is authenticated
+    When the endpoint /cas?password=f00b4r is called with a POST request with the data
+        | Property | Value      |
+        | Name     | FooRootBar |
+    Then there is a root certificate authority "FooRootBar" with the returned GUID
