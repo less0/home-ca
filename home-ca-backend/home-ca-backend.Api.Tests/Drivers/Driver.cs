@@ -61,7 +61,7 @@ namespace home_ca_backend.Api.Tests.Drivers
 
         public void StartApi()
         {
-            AutoResetEvent autoResetEvent = new AutoResetEvent(false);
+            AutoResetEvent apiReadyWaitHandle = new AutoResetEvent(false);
             _apiProcess = Process.Start(new ProcessStartInfo(Path.GetFullPath("../../../../home-ca-backend.Api/bin/Debug/net8.0/home-ca-backend.Api.exe"))
             {
                 WorkingDirectory = "../../../../home-ca-backend.Api/bin/Debug/net8.0/",
@@ -74,7 +74,7 @@ namespace home_ca_backend.Api.Tests.Drivers
                 UseShellExecute = false
             });
             _apiProcess.Should().NotBeNull();
-            _apiProcess.OutputDataReceived += (sender, args) =>
+            _apiProcess!.OutputDataReceived += (_, args) =>
             {
                 if (args.Data == null)
                 {
@@ -83,7 +83,7 @@ namespace home_ca_backend.Api.Tests.Drivers
                 
                 if (args.Data.Contains("Application started."))
                 {
-                    autoResetEvent.Set();
+                    apiReadyWaitHandle.Set();
                 }
             };
             _apiProcess.BeginOutputReadLine();
@@ -93,7 +93,10 @@ namespace home_ca_backend.Api.Tests.Drivers
                 BaseAddress = new($"http://localhost:{KestrelPort}")
             };
 
-            autoResetEvent.WaitOne(TimeSpan.FromSeconds(30));
+            if (!apiReadyWaitHandle.WaitOne(TimeSpan.FromSeconds(30)))
+            {
+                throw new TimeoutException();
+            }
             _apiProcess.CancelOutputRead();
         }
 
