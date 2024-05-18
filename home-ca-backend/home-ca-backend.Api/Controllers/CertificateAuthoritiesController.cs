@@ -1,5 +1,7 @@
 ﻿using home_ca_backend.Api.Model;
 using home_ca_backend.Application;
+using home_ca_backend.Application.GetCertificateAuthorities;
+using home_ca_backend.Application.GetChildrenCertificateAuthorities;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;

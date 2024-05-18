@@ -1,7 +1,6 @@
-﻿using home_ca_backend.Core.CertificateAuthorityServerAggregate;
-using CertificateAuthority = home_ca_backend.Application.Model.CertificateAuthority;
+﻿using CertificateAuthority = home_ca_backend.Application.Model.CertificateAuthority;
 
-namespace home_ca_backend.Application;
+namespace home_ca_backend.Application.GetChildrenCertificateAuthorities;
 
 public abstract class GetChildrenCertificateAuthoritiesResponse : IResponse
 {

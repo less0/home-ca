@@ -1,7 +1,6 @@
-﻿using home_ca_backend.Application.Model;
-using MediatR;
+﻿using MediatR;
 
-namespace home_ca_backend.Application;
+namespace home_ca_backend.Application.GetChildrenCertificateAuthorities;
 
 public class GetChildrenCertificateAuthorities : IRequest<GetChildrenCertificateAuthoritiesResponse>
 {

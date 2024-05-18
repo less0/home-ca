@@ -1,5 +1,6 @@
 using home_ca_backend.Api;
 using home_ca_backend.Application;
+using home_ca_backend.Application.GetCertificateAuthorities;
 using home_ca_backend.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;

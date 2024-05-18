@@ -1,4 +1,4 @@
-﻿namespace home_ca_backend.Application;
+﻿namespace home_ca_backend.Application.GetChildrenCertificateAuthorities;
 
 public class GetChildrenCertificateAuthoritiesParentIdNotFoundResponse : GetChildrenCertificateAuthoritiesResponse
 {

@@ -4,7 +4,7 @@ using JetBrains.Annotations;
 using MediatR;
 using CertificateAuthority = home_ca_backend.Application.Model.CertificateAuthority;
 
-namespace home_ca_backend.Application;
+namespace home_ca_backend.Application.GetChildrenCertificateAuthorities;
 
 [UsedImplicitly]
 public class GetChildrenCertificateAuthoritiesHandler(ICertificateAuthorityServerRepository certificateAuthorityServerRepository)
