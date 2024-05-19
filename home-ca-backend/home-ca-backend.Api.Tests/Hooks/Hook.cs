@@ -14,6 +14,13 @@ namespace home_ca_backend.Api.Tests.Hooks
             Driver.Instance.StartApi();
         }
 
+        [BeforeScenario]
+        public void ResetHttpClient()
+        {
+            Driver.Instance.RawDatabaseAccess.ClearDatabase();
+            Driver.Instance.ResetHttpClient();
+        }
+
         [AfterTestRun]
         public static async Task TearDown() => await Driver.Instance.DisposeAsync();
     }

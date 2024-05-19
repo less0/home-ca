@@ -1,6 +1,6 @@
 ﻿using System.Net.Mime;
 using home_ca_backend.Api.Model;
-using home_ca_backend.Application;
+using home_ca_backend.Application.AddIntermediateCertificateAuthority;
 using home_ca_backend.Application.AddRootCertificateAuthority;
 using home_ca_backend.Application.GetCertificateAuthorities;
 using home_ca_backend.Application.GetChildrenCertificateAuthorities;
@@ -61,6 +61,32 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
             Password = password
         });
         return Ok(response.Guid.ToString());
+    }
+
+    [HttpPost("/cas/{id}/children")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Produces(MediaTypeNames.Text.Plain)]
+    public async Task<ActionResult> PostIntermediateCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, string id, [FromQuery] string password)
+    {
+        var response = await _mediator.Send(new AddIntermediateCertificateAuthority
+        {
+            CertificateAuthority = new()
+            {
+                Id = null,
+                Name = certificateAuthority.Name
+            },
+            ParentId = id,
+            Password = password
+        });
+
+
+        return response switch
+        {
+            AddIntermediateCertificateValidResponse validResponse => Ok(validResponse.CreatedCertificateAuthorityId.Guid
+                .ToString()),
+            AddIntermediateCertificateParentNotFoundResponse => NotFound(),
+            _ => StatusCode(500)
+        };
     }
     
     private static IEnumerable<CertificateAuthority> GetCertificateAuthorities(GetChildrenCertificateAuthoritiesValidResponse validResponse)

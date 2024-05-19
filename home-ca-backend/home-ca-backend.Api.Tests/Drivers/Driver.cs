@@ -205,5 +205,12 @@ namespace home_ca_backend.Api.Tests.Drivers
             privateKey.Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
             certificate.Should().StartWith("-----BEGIN CERTIFICATE-----\n");
         }
+
+        public void ResetHttpClient()
+        {
+            _accessToken = null;
+            LastStatusCode = default;
+            LastResponseBody = string.Empty;
+        }
     }
 }

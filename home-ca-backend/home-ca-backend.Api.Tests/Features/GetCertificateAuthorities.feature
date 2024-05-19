@@ -1,4 +1,5 @@
-﻿Feature: Get certificate authorities
+﻿@nonParallizable
+Feature: Get certificate authorities
 	
 Background: 
 	Given the database is empty

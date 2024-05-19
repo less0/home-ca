@@ -59,7 +59,7 @@ public class GenericSteps
         {
             var id = Guid.Parse(tableRow["Id"]);
             string name = tableRow["Name"];
-            Guid? parentId = string.IsNullOrWhiteSpace(tableRow["Parent"])
+            Guid? parentId = !tableRow.ContainsKey("Parent") || string.IsNullOrWhiteSpace(tableRow["Parent"])
                 ? null
                 : Guid.Parse(tableRow["Parent"]);
 
