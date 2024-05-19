@@ -14,26 +14,18 @@ namespace home_ca_backend.Api.Controllers;
 [Controller]
 public class CertificateAuthoritiesController(IMediator mediator) : Controller
 {
-    private IMediator _mediator = mediator;
-
     [HttpGet("/cas")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    public async Task<ActionResult> GetCertificateAuthorities([FromQuery] bool root = false)
+    public async Task<ActionResult> GetCertificateAuthorities()
     {
-        var response = await _mediator.Send(new GetCertificateAuthorities());
-        return Ok(response.Select(x => new CertificateAuthority
-        {
-            Id = x.Id,
-            Name = x.Name,
-            IsRoot = x.IsRoot,
-            HasChildren = false
-        }));
+        var response = await mediator.Send(new GetCertificateAuthorities());
+        return Ok(response.Select(x => new CertificateAuthority(x.Id, x.Name, x.IsRoot, false)));
     }
 
     [HttpGet("/cas/{id}/children")]
     public async Task<ActionResult> GetCertificateAuthoritiesChildren(string id)
     {
-        var response = await _mediator.Send(new GetChildrenCertificateAuthorities()
+        var response = await mediator.Send(new GetChildrenCertificateAuthorities()
         {
             Id = Guid.Parse(id)
         });
@@ -51,7 +43,7 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
     [Produces(MediaTypeNames.Text.Plain)]
     public async Task<ActionResult> PostRootCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, [FromQuery] string password)
     {
-        var response = await _mediator.Send(new AddRootCertificateAuthority
+        var response = await mediator.Send(new AddRootCertificateAuthority
         {
             CertificateAuthority = new()
             {
@@ -68,7 +60,7 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
     [Produces(MediaTypeNames.Text.Plain)]
     public async Task<ActionResult> PostIntermediateCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, string id, [FromQuery] string password)
     {
-        var response = await _mediator.Send(new AddIntermediateCertificateAuthority
+        var response = await mediator.Send(new AddIntermediateCertificateAuthority
         {
             CertificateAuthority = new()
             {
@@ -89,9 +81,6 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
         };
     }
     
-    private static IEnumerable<CertificateAuthority> GetCertificateAuthorities(GetChildrenCertificateAuthoritiesValidResponse validResponse)
-    {
-        return validResponse.CertificateAuthorities.Select(x =>
-            new CertificateAuthority { Id = x.Id, Name = x.Name, IsRoot = false, HasChildren = false });
-    }
+    private static IEnumerable<CertificateAuthority> GetCertificateAuthorities(GetChildrenCertificateAuthoritiesValidResponse validResponse) => 
+        validResponse.CertificateAuthorities.Select(x => new CertificateAuthority(x.Id, x.Name, false, false));
 }

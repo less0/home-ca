@@ -1,19 +1,11 @@
 ﻿using System.Collections.ObjectModel;
+using JetBrains.Annotations;
 
 namespace home_ca_backend.Api.Model;
 
-public class CertificateAuthority
+public record CertificateAuthority(string? Id, string Name, bool IsRoot, bool HasChildren)
 {
-    public string? Id { get; set; }
-    
-    public required string Name { get; set; }
-
-    public bool IsRoot { get; set; } = false;
-
-    public bool HasChildren { get; set; } = false;
-
-    public List<CertificateAuthority> IntermediateAuthorities { get; } = new();
-
+    [UsedImplicitly]
     public ReadOnlyDictionary<string, string> Links
     {
         get
