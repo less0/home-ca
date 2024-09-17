@@ -12,6 +12,8 @@ using home_ca_backend.Tests.Common;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Reqnroll;
+using Reqnroll.Assist;
 using Testcontainers.MsSql;
 
 namespace home_ca_backend.Api.Tests.Drivers
@@ -39,6 +41,7 @@ namespace home_ca_backend.Api.Tests.Drivers
             $"Server=localhost,{SqlPort};User Id=sa;Password=2Pq93JS!;TrustServerCertificate=True;Database=home-ca";
 
         public RawDatabaseAccess RawDatabaseAccess { get; set; }
+        public bool IsAuthenticated => _accessToken != null;
 
         private Driver()
         {
@@ -63,12 +66,14 @@ namespace home_ca_backend.Api.Tests.Drivers
         public void StartApi()
         {
             AutoResetEvent apiReadyWaitHandle = new AutoResetEvent(false);
+
             _apiProcess = Process.Start(new ProcessStartInfo(Path.GetFullPath("../../../../home-ca-backend.Api/bin/Debug/net8.0/home-ca-backend.Api.exe"))
             {
                 WorkingDirectory = "../../../../home-ca-backend.Api/bin/Debug/net8.0/",
                 Environment =
                 {
                     ["ASPNETCORE_URLS"] = $"http://*:{KestrelPort}/",
+                    ["ASPNETCORE_ENVIRONMENT"] = "Development",
                     ["ConnectionStrings__(DEFAULT)"] = $"Server=localhost,{SqlPort};Database=home-ca;User Id=sa;Password=2Pq93JS!;TrustServerCertificate=True"
                 },
                 RedirectStandardOutput = true,

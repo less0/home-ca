@@ -25,7 +25,7 @@ public class GenericSteps
     }
 
     [When(@"the endpoint (.*) is called with a POST request")]
-    public Task WhenTheEndpointCasIsCalledWithApostRequest(string uri) => 
+    public Task WhenTheEndpointCasIsCalledWithApostRequest(string uri) =>
         Driver.Instance.SendHttpPostRequest(uri, new StringContent(""));
 
     [Then("the status code should be (.*)")]
@@ -78,7 +78,7 @@ public class GenericSteps
     public void ThenTheResponseIsAnArrayWithTheFields(Table table)
     {
         using var _ = new AssertionScope();
-        
+
         var array = JsonConvert.DeserializeObject<JArray>(Driver.Instance.LastResponseBody);
         foreach (var tableRow in table.Rows)
         {
@@ -104,7 +104,17 @@ public class GenericSteps
     }
 
     [Given(@"a valid user is authenticated")]
-    public async Task GivenAValidUserIsAuthenticated() => await GivenTheUserIsAuthenticatedWithThePassword("test@example.com", "t3sTpa55w0rd");
+    public async Task GivenAValidUserIsAuthenticated() 
+    {
+        if (Driver.Instance.IsAuthenticated)
+        {
+            await Task.CompletedTask;
+        } 
+        else 
+        { 
+            await GivenTheUserIsAuthenticatedWithThePassword("test@example.com", "t3sTpa55w0rd");
+        }
+    }
 
     [When(@"the endpoint (.*) is called with a POST request with the data")]
     public async Task WhenTheEndpointIsCalledWithApostRequestWithTheData(string uri, Table table)
