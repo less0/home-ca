@@ -69,6 +69,12 @@ public class CertificateAuthorityServer
         var certificateAuthority = FindById(_rootCertificateAuthorities, id) ?? throw new UnknownCertificateAuthorityIdException();
         return certificateAuthority.Leafs;
     }
+
+    public Leaf GetLeaf(LeafId id)
+    {
+        var parent = FindParent(id);
+        return parent.Leafs.First(l => l.Id.Equals(id));
+    }
     
     private CertificateAuthority FindById(CertificateAuthorityId id)
     {

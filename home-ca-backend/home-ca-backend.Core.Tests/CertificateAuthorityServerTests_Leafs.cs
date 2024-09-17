@@ -1,6 +1,7 @@
 ﻿using FluentAssertions;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using home_ca_backend.Core.CertificateAuthorityServerAggregate.Exceptions;
+using System.Net.WebSockets;
 using Xunit;
 
 namespace homa_ca_backend.Core.Tests;
@@ -173,5 +174,108 @@ public partial class CertificateAuthorityServerTests
 
         // Note: Assert that Leaf2 was not added if your code supports it
         root2.Leafs.Should().NotContain(leaf2);
+    }
+
+    [Fact]
+    public void GetLeaf_LeafDoesNotExist_ThrowsUnknownLeafIdException()
+    {
+        // Arrange
+        CertificateAuthorityServer componentUnderTest = new();
+        Assert.Throws<UnknownLeafIdException>(() => componentUnderTest.GetLeaf(new()));
+    }
+
+    [Fact]
+    public void GetLeaf_LeafExistsInRootCertificateAuthority_LeafIsReturned()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        LeafId leafId = new();
+
+        Leaf leaf = new()
+        {
+            Name = "Leaf",
+            Id = leafId
+        };
+
+        componentUnderTest.AddRootCertificateAuthority(new CertificateAuthority()
+        {
+            Name = "Root CA 1",
+            Id = new CertificateAuthorityId()
+        });
+        componentUnderTest.AddRootCertificateAuthority(new CertificateAuthority()
+        {
+            Name = "Root CA 2",
+            Id = rootId
+        });
+        componentUnderTest.AddLeaf(rootId, leaf);
+
+        var result = componentUnderTest.GetLeaf(leafId);
+
+        result.Name.Should().Be(leaf.Name);
+        result.Id.Should().Be(leaf.Id);
+    }
+
+    [Fact]
+    public void GetLeaf_LeafExistsInIntermediateCertificateAuthority_LeafIsReturned()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        CertificateAuthorityId intermediateId = new();
+        LeafId leafId = new();
+
+        Leaf leaf = new()
+        {
+            Name = "Leaf",
+            Id = leafId
+        };
+
+        componentUnderTest.AddRootCertificateAuthority(new()
+        {
+            Name = "Root CA",
+            Id = rootId
+        });
+        componentUnderTest.AddIntermediateCertificateAuthority(rootId,
+            new()
+            {
+                Name = "Intermediate CA",
+                Id = intermediateId
+            });
+        componentUnderTest.AddLeaf(intermediateId, leaf);
+
+        var result = componentUnderTest.GetLeaf(leafId);
+
+        result.Id.Should().Be(leaf.Id);
+        result.Name.Should().Be(leaf.Name);
+    }
+
+    [Fact]
+    public void GetLeaf_Regression_ExceptionIfTheLeafIdWasNotTheExactSameInstance()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        CertificateAuthorityId rootId = new();
+        Guid leafId = Guid.NewGuid();
+
+        Leaf leaf = new()
+        {
+            Name = "Leaf",
+            Id = new(leafId)
+        };
+
+        componentUnderTest.AddRootCertificateAuthority(new CertificateAuthority()
+        {
+            Name = "Root CA 1",
+            Id = new CertificateAuthorityId()
+        });
+        componentUnderTest.AddRootCertificateAuthority(new CertificateAuthority()
+        {
+            Name = "Root CA 2",
+            Id = rootId
+        });
+        componentUnderTest.AddLeaf(rootId, leaf);
+
+        var result = componentUnderTest.GetLeaf(new(leafId));
+
+        result.Name.Should().Be(leaf.Name);
+        result.Id.Should().Be(leaf.Id);
     }
 }
