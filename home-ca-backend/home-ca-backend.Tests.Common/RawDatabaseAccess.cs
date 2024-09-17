@@ -204,6 +204,25 @@ public class RawDatabaseAccess(string connectionString)
         StoreLeafCertificate(leafId, leafCertificate, leafPassword);
     }
 
+    public void CreateCertificateForLeaf(Guid leafId, string leafPassword)
+    {
+        var leafName = GetLeafName(leafId);
+        var certificate = CreateSelfSignedCertificate(leafName);
+        
+        StoreLeafCertificate(leafId, certificate, leafPassword);
+    }
+
+    private X509Certificate2 CreateSelfSignedCertificate(string name)
+    {
+        using RSA rsa = RSA.Create(4096);
+        CertificateRequest certificateRequest = new(new X500DistinguishedName($"cn={name}"), rsa, HashAlgorithmName.SHA256,
+            RSASignaturePadding.Pkcs1);
+        certificateRequest.CertificateExtensions.Add(new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
+        var certificate = certificateRequest.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-2), DateTimeOffset.UtcNow.AddDays(365));
+
+        return certificate;
+    }
+
     private Guid GetParentCertificateAuthorityId(Guid leafId)
     {
         using SqlConnection connection = new(connectionString);

@@ -64,6 +64,12 @@ public class CertificateAuthorityServer
         return rootCertificateAuthority.GetCertificateChain(id);
     }
 
+    public IReadOnlyCollection<Leaf> GetLeafs(CertificateAuthorityId id)
+    {
+        var certificateAuthority = FindById(_rootCertificateAuthorities, id) ?? throw new UnknownCertificateAuthorityIdException();
+        return certificateAuthority.Leafs;
+    }
+    
     private CertificateAuthority FindById(CertificateAuthorityId id)
     {
         return FindById(_rootCertificateAuthorities, id) ?? throw new UnknownCertificateAuthorityIdException();

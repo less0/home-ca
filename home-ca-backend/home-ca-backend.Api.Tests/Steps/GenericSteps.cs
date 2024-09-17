@@ -140,4 +140,16 @@ public class GenericSteps
     {
         Driver.Instance.AssertHasRootCertificateForLastReturnedId(expectedName);
     }
+
+    [Given(@"the following leafs are registered")]
+    public void GivenTheFollowingLeafsAreRegistered(Table table)
+    {
+        Driver.Instance.CreateLeafs(table);
+    }
+
+    [Given(@"the leaf ""(.*)"" has a certificate")]
+    public void GivenTheLeafHasACertificate(Guid id)
+    {
+        Driver.Instance.RawDatabaseAccess.CreateCertificateForLeaf(id, "123456");
+    }
 }

@@ -217,5 +217,17 @@ namespace home_ca_backend.Api.Tests.Drivers
             LastStatusCode = default;
             LastResponseBody = string.Empty;
         }
+
+        public void CreateLeafs(Table table)
+        {
+            foreach (var tableRow in table.Rows)
+            {
+                var id = tableRow.GetString("Id");
+                var name = tableRow.GetString("Name");
+                var parent = tableRow.GetString("Parent");
+                
+                RawDatabaseAccess.CreateLeaf(Guid.Parse(parent), Guid.Parse(id), name);
+            }
+        }
     }
 }
