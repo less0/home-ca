@@ -1,4 +1,5 @@
 ﻿using home_ca_backend.Application.GetLeaf;
+using home_ca_backend.Application.GetLeafPrivateKey;
 using home_ca_backend.Application.GetLeafs;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -39,6 +40,13 @@ public class LeafsController(IMediator mediator) : Controller
     [HttpGet("/leafs/{id}/privateKey")]
     public async Task<IActionResult> GetPrivateKey(string id)
     {
-        return NotFound();
+        var response = await mediator.Send(new GetLeafPrivateKeyQuery(Guid.Parse(id)));
+        return response switch
+        {
+            GetLeafPrivateKeyValidResponse validResponse => Content(validResponse.PrivateKey, "text/plain"),
+            GetLeafPrivateKeyLeafNotFoundResult => NotFound(),
+            GetLeafPrivateKeyMissingCertificateResult => NotFound(),
+            _ => StatusCode(500)
+        };
     }
 }
