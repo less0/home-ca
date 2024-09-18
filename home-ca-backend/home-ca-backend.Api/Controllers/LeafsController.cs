@@ -31,7 +31,7 @@ public class LeafsController(IMediator mediator) : Controller
         return response switch
         {
             GetLeafValidResponse validResponse => Ok((Leaf)validResponse.Leaf),
-            GetLeafIdNotFoundException => NotFound(),
+            GetLeafLeafIdNotFoundResponse => NotFound(),
             _ => StatusCode(500)
         };
     }

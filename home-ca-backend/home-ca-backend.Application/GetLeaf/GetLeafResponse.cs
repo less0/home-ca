@@ -6,6 +6,6 @@ namespace home_ca_backend.Application.GetLeaf
     {
         public static GetLeafResponse Valid(Leaf leaf) => new GetLeafValidResponse(leaf);
 
-        public static GetLeafResponse IdNotFound() => new GetLeafIdNotFoundException();
+        public static GetLeafResponse IdNotFound() => new GetLeafLeafIdNotFoundResponse();
     }
 }
