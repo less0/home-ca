@@ -122,6 +122,12 @@ public class GenericSteps(ITestOutputHelper testOutputHelper)
         }
     }
 
+    [Given("no user is authenticated")]
+    public void GivenNoUserIsAuthenticated()
+    {
+        Driver.Instance.RemoveAuthenticationToken();
+    }
+
     [When(@"the endpoint (.*) is called with a POST request with the data")]
     public async Task WhenTheEndpointIsCalledWithApostRequestWithTheData(string uri, Table table)
     {

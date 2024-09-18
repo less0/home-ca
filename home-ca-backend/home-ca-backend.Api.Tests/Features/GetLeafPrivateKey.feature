@@ -1,6 +1,7 @@
 Feature: Private key of leafs can be obtained via the respective endpoints
 
 Scenario: Endpoint cannot be called unauthenticated
+	Given no user is authenticated
 	When the endpoint /leafs/02b4362a-b13a-4183-9cc8-8ebadefe6a01/privateKey is called
 	Then the status code should be 401
 

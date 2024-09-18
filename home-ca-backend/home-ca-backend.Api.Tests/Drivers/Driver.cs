@@ -213,9 +213,13 @@ namespace home_ca_backend.Api.Tests.Drivers
 
         public void ResetHttpClient()
         {
-            _accessToken = null;
             LastStatusCode = default;
             LastResponseBody = string.Empty;
+        }
+
+        public void RemoveAuthenticationToken()
+        {
+            _accessToken = null;
         }
 
         public void CreateLeafs(Table table)

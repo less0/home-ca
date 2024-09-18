@@ -13,6 +13,7 @@ Scenario: Leafs endpoint can't be accessed unauthenticated
 	Given the following certificate authorities are registered:
 		| Id                                   | Name |
 		| b63c4f39-68ab-4d7e-97e5-18815455f360 | Root |
+		And no user is authenticated
 	When the endpoint /cas/b63c4f39-68ab-4d7e-97e5-18815455f360/leafs is called
 	Then the status code should be 401
 

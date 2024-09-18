@@ -7,6 +7,7 @@ Scenario: Endpoint is available
         And the status code should not be 405
         
 Scenario: Endpoint cannot be called unauthenticated
+    Given no user is authenticated
     When the endpoint /cas is called with a POST request
     Then the status code should be 401
     
@@ -37,6 +38,7 @@ Scenario: Create intermediate certificate endpoint is available
         And the status code should not be 405
     
 Scenario: Create intermediate certificate endpoint can't be called unauthorized
+    Given no user is authenticated
     When the endpoint /cas/a1b1747b-8c3a-4bd6-8a5f-0240f31a6c34/children is called with a POST request
     Then the status code should be 401
     
