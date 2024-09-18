@@ -12,11 +12,12 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Reqnroll;
 using Reqnroll.Assist;
+using Xunit.Abstractions;
 
 namespace home_ca_backend.Api.Tests.Steps;
 
 [Binding]
-public class GenericSteps
+public class GenericSteps(ITestOutputHelper testOutputHelper)
 {
     [When("the endpoint (.*) is called")]
     public async Task WhenTheEndpointIsCalled(string relativeUrl)
@@ -31,6 +32,11 @@ public class GenericSteps
     [Then("the status code should be (.*)")]
     public void ThenTheStatusCodeShouldBe(int expectedStatusCode)
     {
+        if (expectedStatusCode != 500)
+        {
+            testOutputHelper.WriteLine(Driver.Instance.LastResponseBody);
+        }
+
         Driver.Instance.LastStatusCode.Should().Be((HttpStatusCode)expectedStatusCode);
     }
 
@@ -152,4 +158,38 @@ public class GenericSteps
     {
         Driver.Instance.RawDatabaseAccess.CreateCertificateForLeaf(id, "123456");
     }
+
+    [Given(@"the root certificate authority ""(.*)"" has a certificate")]
+    public void GivenTheCertificateAuthorityHasACertificate(Guid id)
+    {
+        Driver.Instance.RawDatabaseAccess.CreateCertificateForRootCertificateAuthority(id, "123456");
+    }
+
+    [Given(@"the leaf ""(.*)"" has a signed certificate")]
+    public void GivenTheLeafHasASignedCertificate(Guid id)
+    {
+        Driver.Instance.RawDatabaseAccess.CreateCertificateForLeaf(id, "654321", "123456");
+    }
+
+    [Then("the response is an object with the fields")]
+    public void ThenTheResponseIsAnObjectWithTheFields(DataTable dataTable)
+    {
+        var obj = JsonConvert.DeserializeObject<JObject>(Driver.Instance.LastResponseBody);
+        foreach(var row in dataTable.Rows)
+        {
+            var property = row.GetString("Property");
+            var expectedValue = row.GetString("Value");
+
+            obj[property].Value<string>().Should().Be(expectedValue);
+        }
+    }
+
+    [Then("the property {string} of the response is not empty")]
+    public void ThenThePropertyOfTheResponseIsNotEmpty(string property)
+    {
+        var obj = JsonConvert.DeserializeObject<JObject> (Driver.Instance.LastResponseBody);
+        obj[property].Value<string>().Should().NotBeNullOrWhiteSpace();
+    }
+
+
 }

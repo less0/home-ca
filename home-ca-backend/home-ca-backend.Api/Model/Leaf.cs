@@ -2,10 +2,10 @@
 
 namespace home_ca_backend.Api.Model;
 
-public record struct Leaf(string Id, string Name, string? Certificate = null, string? PrivateKey = null)
+public record struct Leaf(string Id, string Name, string? CertificateChain = null, string? PrivateKey = null)
 {
     public static explicit operator Leaf(Application.Model.Leaf leaf) => 
-        new(leaf.Id.ToString(), leaf.Name, leaf.Certificate, leaf.PrivateKey);
+        new(leaf.Id.ToString(), leaf.Name, leaf.CertificateChain, leaf.PrivateKey);
 
     public ReadOnlyDictionary<string, string> Links
     {
