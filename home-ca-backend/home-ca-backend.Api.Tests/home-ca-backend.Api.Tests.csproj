@@ -13,7 +13,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.0.0" />
         <PackageReference Include="Reqnroll.Tools.MsBuild.Generation" Version="1.0.1" />
         <PackageReference Include="Reqnroll.xUnit" Version="1.0.1" />
         <PackageReference Include="Testcontainers.MsSql" Version="3.8.0" />
@@ -22,11 +22,12 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="FluentAssertions" Version="6.2.0"/>
+        <PackageReference Include="FluentAssertions" Version="6.2.0" />
     </ItemGroup>
 
     <ItemGroup>
       <None Remove="settings.json" />
+      <UpToDateCheckInput Remove="features\GetLeafPrivateKey.feature" />
       <Content Include="Features\AddCertificateAuthorities.feature" />
       <Content Include="Features\Authentication.feature" />
       <Content Include="Features\GetLeafs.feature" />

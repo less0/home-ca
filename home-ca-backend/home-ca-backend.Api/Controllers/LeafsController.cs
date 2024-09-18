@@ -35,4 +35,10 @@ public class LeafsController(IMediator mediator) : Controller
             _ => StatusCode(500)
         };
     }
+
+    [HttpGet("/leafs/{id}/privateKey")]
+    public async Task<IActionResult> GetPrivateKey(string id)
+    {
+        return NotFound();
+    }
 }

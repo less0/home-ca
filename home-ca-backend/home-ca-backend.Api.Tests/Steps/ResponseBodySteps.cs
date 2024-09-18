@@ -16,4 +16,12 @@ public class ResponseBodySteps
         var array = JsonConvert.DeserializeObject<JArray>(Driver.Instance.LastResponseBody);
         array.Any(x => x[fieldName].ToObject<object?>() != null).Should().BeFalse();
     }
+
+    [Then("the response is a well-formed PEM private key")]
+    public void ThenTheResponseIsAWell_FormedPEMPrivateKey()
+    {
+        Driver.Instance.LastResponseBody.Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
+        Driver.Instance.LastResponseBody.Should().EndWith("\n-----END ENCRYPTED PRIVATE KEY-----");
+    }
+
 }
