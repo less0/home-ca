@@ -1,4 +1,5 @@
-﻿using home_ca_backend.Application.GetLeafs;
+﻿using home_ca_backend.Application.GetLeaf;
+using home_ca_backend.Application.GetLeafs;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -19,6 +20,18 @@ public class LeafsController(IMediator mediator) : Controller
         {
             GetLeafsValidResponse validResponse => Ok(validResponse.Leafs.Select(x => (Leaf)x)),
             GetLeafsUnknownParentIdResponse => NotFound(),
+            _ => StatusCode(500)
+        };
+    }
+
+    [HttpGet("/leafs/{id}")]
+    public async Task<IActionResult> GetLeaf(string id)
+    {
+        var response = await mediator.Send(new GetLeafQuery(Guid.Parse(id)));
+        return response switch
+        {
+            GetLeafValidResponse validResponse => Ok((Leaf)validResponse.Leaf),
+            GetLeafIdNotFoundException => NotFound(),
             _ => StatusCode(500)
         };
     }
