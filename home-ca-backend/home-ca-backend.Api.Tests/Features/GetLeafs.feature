@@ -1,4 +1,4 @@
-@nonParallizable
+@nonParallelizable
 Feature: Get leafs
 
 Scenario: Leafs endpoint can be accessed

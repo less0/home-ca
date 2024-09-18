@@ -1,4 +1,4 @@
-﻿@nonParallizable
+﻿@nonParallelizable
 Feature: Certificate authorities can be added
    
 Scenario: Endpoint is available

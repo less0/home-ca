@@ -4,6 +4,6 @@
     "bindingAssemblies": [
     ],
     "generator": {
-        "addNonParallelizableMarkerForTags": ["nonParallizable"]
+      "addNonParallelizableMarkerForTags": [ "nonParallelizable" ]
     }
 }

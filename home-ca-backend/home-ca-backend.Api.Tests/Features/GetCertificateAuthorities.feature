@@ -1,4 +1,4 @@
-﻿@nonParallizable
+﻿@nonParallelizable
 Feature: Get certificate authorities
 	
 Background: 

@@ -1,4 +1,4 @@
-﻿@nonParallizable
+﻿@nonParallelizable
 Feature: Authentication
     
 Scenario: Unauthenticated requests return an Unauthorized (401) status code 
