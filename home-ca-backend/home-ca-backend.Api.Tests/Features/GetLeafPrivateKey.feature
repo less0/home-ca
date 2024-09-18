@@ -1,3 +1,4 @@
+@nonParallelizable
 Feature: Private key of leafs can be obtained via the respective endpoints
 
 Scenario: Endpoint cannot be called unauthenticated

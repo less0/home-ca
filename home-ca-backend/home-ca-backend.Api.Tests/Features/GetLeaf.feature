@@ -1,3 +1,4 @@
+@nonParallelizable
 Feature: Get single leaf
 
 Background: 

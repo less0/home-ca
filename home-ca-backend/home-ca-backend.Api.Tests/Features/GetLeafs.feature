@@ -56,5 +56,5 @@ Scenario: List of leafs does not contain certificate
 		    | b877b223-90d0-4b5b-a570-8925f1d4b0f3 | Leaf | 3d377e1f-ecff-4ac8-b81d-4c416133a8e4 |
       	And the leaf "b877b223-90d0-4b5b-a570-8925f1d4b0f3" has a certificate
     When the endpoint /cas/3d377e1f-ecff-4ac8-b81d-4c416133a8e4/leafs is called
-    Then the response is an array without the "certificate" field in the items
+    Then the response is an array without the "certificateChain" field in the items
       
