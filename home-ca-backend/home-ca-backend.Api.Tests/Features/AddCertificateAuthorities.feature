@@ -25,12 +25,12 @@ Scenario: Endpoint returns the GUID of the created certificate authority
         | Name     | r007  |
     Then the response is a valid GUID
     
-Scenario: Root certificate authority is created on successful request
+Scenario: Root certificate authority with well-formed certificate is created on successful request
     Given a valid user is authenticated
     When the endpoint /cas?password=f00b4r is called with a POST request with the data
         | Property | Value      |
         | Name     | FooRootBar |
-    Then there is a root certificate authority "FooRootBar" with the returned GUID
+    Then there is a certificate authority "FooRootBar" with a well-formed certificate for the returned GUID
     
 Scenario: Create intermediate certificate endpoint is available
     When the endpoint /cas/6535025c-500b-4fa3-a3bb-6697d2cc7bb8/children is called with a POST request
@@ -54,7 +54,8 @@ Scenario: Create intermediate certificate endpoint returns OK (200) on valid req
         And the following certificate authorities are registered:
             | Id                                   | Name | Parent |
             | 562cbb96-d97c-4a26-b33a-d0039180a6ed | Root |        |
-    When the endpoint /cas/562cbb96-d97c-4a26-b33a-d0039180a6ed/children is called with a POST request with the data
+        And the root certificate authority "562cbb96-d97c-4a26-b33a-d0039180a6ed" has a certificate
+    When the endpoint /cas/562cbb96-d97c-4a26-b33a-d0039180a6ed/children?password=1234&parentPassword=123456 is called with a POST request with the data
         | Property | Value                              |
         | Name     | Intermediate Certificate Authority |
     Then the status code should be 200
@@ -64,7 +65,30 @@ Scenario: Create intermediate certificate endpoint returns GUID on valid request
         And the following certificate authorities are registered:
             | Id                                   | Name             |
             | 9f87d75e-5336-4c81-8479-f5a43bdb7be1 | Rooty McRootface |
-    When the endpoint /cas/9f87d75e-5336-4c81-8479-f5a43bdb7be1/children is called with a POST request with the data
+        And the root certificate authority "9f87d75e-5336-4c81-8479-f5a43bdb7be1" has a certificate
+    When the endpoint /cas/9f87d75e-5336-4c81-8479-f5a43bdb7be1/children?password=1234&parentPassword=123456 is called with a POST request with the data
         | Property | Value               |
         | Name     | Intermediate thingy |
     Then the response is a valid GUID
+
+Scenario: Intermediate certificate authority is created with certificate
+    Given a valid user is authenticated
+        And the following certificate authorities are registered:
+            | Id                                   | Name    |
+            | 9dc6996b-d4ee-4816-ad4a-7a238e108b24 | Root CA |
+        And the root certificate authority "9dc6996b-d4ee-4816-ad4a-7a238e108b24" has a certificate
+    When the endpoint /cas/9dc6996b-d4ee-4816-ad4a-7a238e108b24/children?password=password&parentPassword=123456 is called with a POST request with the data
+        | Property | Value           |
+        | Name     | Intermediate CA |
+    Then there is a certificate authority "Intermediate CA" with a well-formed certificate for the returned GUID
+
+Scenario: Creating an intermediate certificate fails with forbidden (403) if the parent password mismatches
+    Given a valid user is authenticated
+        And the following certificate authorities are registered:
+            | Id                                   | Name |
+            | 8229eece-dfdf-4d01-8f79-5c30b9b1e7ba | root |
+        And the root certificate authority "8229eece-dfdf-4d01-8f79-5c30b9b1e7ba" has a certificate
+    When the endpoint /cas/8229eece-dfdf-4d01-8f79-5c30b9b1e7ba/children?password=abcdef&parentPassword=654321 is called with a POST request with the data
+        | Property | Value           |
+        | Name     | Intermediate CA |
+    Then the status code should be 403

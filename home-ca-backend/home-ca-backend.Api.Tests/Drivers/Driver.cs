@@ -189,7 +189,7 @@ namespace home_ca_backend.Api.Tests.Drivers
             _instance = null;
         }
 
-        public void AssertHasRootCertificateForLastReturnedId(string expectedName)
+        public void AssertHasWellFormedCertificateForLastReturnedId(string expectedName)
         {
             CertificateAuthorityId id = new(new(LastResponseBody));
 

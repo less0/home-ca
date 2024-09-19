@@ -1,0 +1,3 @@
+﻿namespace home_ca_backend.Application.AddIntermediateCertificateAuthority;
+
+public record ParentNotFoundResponse() : AddIntermediateCertificateAuthorityResponse(false);

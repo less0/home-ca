@@ -58,7 +58,7 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
     [HttpPost("/cas/{id}/children")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Produces(MediaTypeNames.Text.Plain)]
-    public async Task<ActionResult> PostIntermediateCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, string id, [FromQuery] string password)
+    public async Task<ActionResult> PostIntermediateCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, string id, [FromQuery] string password, [FromQuery] string parentPassword)
     {
         var response = await mediator.Send(new AddIntermediateCertificateAuthority
         {
@@ -68,15 +68,17 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
                 Name = certificateAuthority.Name
             },
             ParentId = id,
-            Password = password
+            Password = password,
+            ParentPassword = parentPassword
         });
 
 
         return response switch
         {
-            AddIntermediateCertificateValidResponse validResponse => Ok(validResponse.CreatedCertificateAuthorityId.Guid
+            ValidResponse validResponse => Ok(validResponse.CreatedCertificateAuthorityId.Guid
                 .ToString()),
-            AddIntermediateCertificateParentNotFoundResponse => NotFound(),
+            ParentNotFoundResponse => NotFound(),
+            InvalidPasswordResponse => Forbid(),
             _ => StatusCode(500)
         };
     }

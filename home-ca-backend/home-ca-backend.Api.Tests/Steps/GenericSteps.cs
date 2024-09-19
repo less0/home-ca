@@ -147,10 +147,10 @@ public class GenericSteps(ITestOutputHelper testOutputHelper)
         Guid.TryParse(Driver.Instance.LastResponseBody, out _).Should().BeTrue();
     }
 
-    [Then(@"there is a root certificate authority ""(.*)"" with the returned GUID")]
+    [Then(@"there is a certificate authority ""(.*)"" with a well-formed certificate for the returned GUID")]
     public void ThenThereIsARootCertificateAuthorityWithTheReturnedGuid(string expectedName)
     {
-        Driver.Instance.AssertHasRootCertificateForLastReturnedId(expectedName);
+        Driver.Instance.AssertHasWellFormedCertificateForLastReturnedId(expectedName);
     }
 
     [Given(@"the following leafs are registered")]
