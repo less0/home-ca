@@ -31,6 +31,13 @@ Scenario: Root certificate authority with well-formed certificate is created on 
         | Property | Value      |
         | Name     | FooRootBar |
     Then there is a certificate authority "FooRootBar" with a well-formed certificate for the returned GUID
+
+Scenario: Root certificate is created with a lifetime of 10 years
+    Given a valid user is authenticated
+    When the endpoint /cas?password=quxbaz is called with a POST request with the data
+        | Property | Value      |
+        | Name     | QuxRootBaz |
+    Then there is a certificate with a lifetime of 10 years for the returned GUID
     
 Scenario: Create intermediate certificate endpoint is available
     When the endpoint /cas/6535025c-500b-4fa3-a3bb-6697d2cc7bb8/children is called with a POST request

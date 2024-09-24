@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -209,6 +210,15 @@ namespace home_ca_backend.Api.Tests.Drivers
             createdAt.Should().BeCloseTo(DateTimeOffset.Now, TimeSpan.FromSeconds(10));
             privateKey.Should().StartWith("-----BEGIN ENCRYPTED PRIVATE KEY-----\n");
             certificate.Should().StartWith("-----BEGIN CERTIFICATE-----\n");
+        }
+
+        public void AssertHasCertificateWithLifetimeForLastReturnedId(DateTime certificateLifetime)
+        {
+            CertificateAuthorityId id = new(new(LastResponseBody));
+            var pemCertificate = RawDatabaseAccess.GetReferenceValueByTableAndId<CertificateAuthority, string>(id, 
+                nameof(CertificateAuthority.PemCertificate));
+            var certificate = X509Certificate2.CreateFromPem(pemCertificate);
+            certificate.NotAfter.Should().BeCloseTo(certificateLifetime, TimeSpan.FromSeconds(10));
         }
 
         public void ResetHttpClient()
