@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace home_ca_backend.Api.Controllers;
 
 [Controller]
-public class CertificateAuthoritiesController(IMediator mediator) : Controller
+public class GetCertificateAuthoritiesController(IMediator mediator) : Controller
 {
     [HttpGet("/cas")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -33,29 +33,6 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
         {
             GetChildrenCertificateAuthoritiesValidResponse validResponse => Ok(GetCertificateAuthorities(validResponse)),
             GetChildrenCertificateAuthoritiesParentIdNotFoundResponse => NotFound(),
-            _ => StatusCode(500)
-        };
-    }
-
-    [HttpPost("/cas")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [Produces(MediaTypeNames.Text.Plain)]
-    public async Task<ActionResult> PostRootCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, [FromQuery] string password)
-    {
-        var response = await mediator.Send(new AddRootCertificateAuthorityCommand
-        {
-            CertificateAuthority = new()
-            {
-                Id = null,
-                Name = certificateAuthority.Name
-            },
-            Password = password
-        });
-
-        return response switch
-        {
-            Application.AddRootCertificateAuthority.ValidResponse validResponse => Ok(validResponse.Id.ToString()), 
-            ValidationFailedResponse validationFailedResponse => BadRequest(),
             _ => StatusCode(500)
         };
     }
