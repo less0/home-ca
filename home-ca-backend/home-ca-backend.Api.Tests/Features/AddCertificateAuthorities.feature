@@ -77,6 +77,17 @@ Scenario: Create intermediate certificate endpoint returns GUID on valid request
         | Property | Value               |
         | Name     | Intermediate thingy |
     Then the response is a valid GUID
+       
+Scenario: Intermediate certificate authorities are created with a certificate
+    Given a valid user is authenticated
+        And the following certificate authorities are registered:
+            | Id                                   | Name             |
+            | 3120c450-972a-4d97-b2c6-7e4e943115ba | Rooty McRootface |
+        And the root certificate authority "3120c450-972a-4d97-b2c6-7e4e943115ba" has a certificate
+    When the endpoint /cas/3120c450-972a-4d97-b2c6-7e4e943115ba/children?password=1234&parentPassword=123456 is called with a POST request with the data
+        | Property | Value                              |
+        | Name     | Intermediate Certificate Authority |
+    Then there is a certificate with a lifetime of 3 years for the returned GUID
 
 Scenario: Intermediate certificate authority is created with certificate
     Given a valid user is authenticated

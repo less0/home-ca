@@ -434,7 +434,7 @@ public partial class CertificateAuthorityServerTests
 
         componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
         componentUnderTest.AddIntermediateCertificateAuthority(rootCertificateAuthority.Id, intermediateCertificateAuthority);
-        
+
         componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "root password");
         timeProvider.SetUtcNow(DateTimeOffset.UtcNow.AddYears(8));
         componentUnderTest.GenerateIntermediateCertificate(intermediateCertificateAuthority.Id, "intermediate password", "root password");
@@ -444,6 +444,55 @@ public partial class CertificateAuthorityServerTests
             new(intermediateCertificateAuthority.EncryptedCertificate!, "intermediate password");
 
         intermediateCertificate.NotAfter.Should().Be(rootCertificate.NotAfter);
+    }
+
+    [Fact]
+    public void GenerateIntermediateCertificate_HasLifetimeOfThreeYears()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        var rootCertificateAuthority = new CertificateAuthority()
+        {
+            Name = "Root Certificate Authority"
+        };
+        CertificateAuthority intermediateCertificateAuthority = new()
+        {
+            Name = "Intermediate Certificate Authority"
+        };
+
+        componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
+        componentUnderTest.AddIntermediateCertificateAuthority(rootCertificateAuthority.Id, intermediateCertificateAuthority);
+
+        componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "root password");
+        componentUnderTest.GenerateIntermediateCertificate(intermediateCertificateAuthority.Id, "intermediate password", "root password");
+
+        X509Certificate2 intermediateCertificate =
+            new(intermediateCertificateAuthority.EncryptedCertificate!, "intermediate password");
+
+        intermediateCertificate.NotAfter.Should().BeCloseTo(DateTime.Now.AddYears(3), TimeSpan.FromSeconds(2));
+    }
+
+    [Fact]
+    public void GenerateIntermediateCertificate_PemCertificate_HasLifetimeOfThreeYears()
+    {
+        CertificateAuthorityServer componentUnderTest = new();
+        var rootCertificateAuthority = new CertificateAuthority()
+        {
+            Name = "Root Certificate Authority"
+        };
+        CertificateAuthority intermediateCertificateAuthority = new()
+        {
+            Name = "Intermediate Certificate Authority"
+        };
+
+        componentUnderTest.AddRootCertificateAuthority(rootCertificateAuthority);
+        componentUnderTest.AddIntermediateCertificateAuthority(rootCertificateAuthority.Id, intermediateCertificateAuthority);
+
+        componentUnderTest.GenerateRootCertificate(rootCertificateAuthority.Id, "root password");
+        componentUnderTest.GenerateIntermediateCertificate(intermediateCertificateAuthority.Id, "intermediate password", "root password");
+
+        X509Certificate2 publicKey = X509Certificate2.CreateFromPem(intermediateCertificateAuthority.PemCertificate);
+
+        publicKey.NotAfter.Should().BeCloseTo(DateTime.Now.AddYears(3), TimeSpan.FromSeconds(2));
     }
 
     [Fact]

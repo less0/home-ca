@@ -164,7 +164,7 @@ public class RawDatabaseAccess(string connectionString)
         CertificateRequest certificateRequest = new(new X500DistinguishedName($"cn={name}"), rsa, HashAlgorithmName.SHA256,
             RSASignaturePadding.Pkcs1);
         certificateRequest.CertificateExtensions.Add(new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
-        var certificate = certificateRequest.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-2), DateTimeOffset.UtcNow.AddDays(365));
+        var certificate = certificateRequest.CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-2), DateTimeOffset.UtcNow.AddYears(10));
 
         command.CommandText = $"UPDATE {nameof(CertificateAuthority)} SET " +
                               $"{nameof(CertificateAuthority.EncryptedCertificate)}=@Certificate, " +
