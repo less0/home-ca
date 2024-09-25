@@ -1,6 +1,5 @@
 ﻿using System.Net.Mime;
 using home_ca_backend.Api.Model;
-using home_ca_backend.Application.AddIntermediateCertificateAuthority;
 using home_ca_backend.Application.AddRootCertificateAuthority;
 using home_ca_backend.Application.GetCertificateAuthorities;
 using home_ca_backend.Application.GetChildrenCertificateAuthorities;
@@ -43,7 +42,7 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
     [Produces(MediaTypeNames.Text.Plain)]
     public async Task<ActionResult> PostRootCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, [FromQuery] string password)
     {
-        var response = await mediator.Send(new AddRootCertificateAuthority
+        var response = await mediator.Send(new AddRootCertificateAuthorityCommand
         {
             CertificateAuthority = new()
             {
@@ -52,33 +51,11 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
             },
             Password = password
         });
-        return Ok(response.Guid.ToString());
-    }
-
-    [HttpPost("/cas/{id}/children")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-    [Produces(MediaTypeNames.Text.Plain)]
-    public async Task<ActionResult> PostIntermediateCertificateAuthority([FromBody] PostIntermediateCertificateAuthority certificateAuthority, string id)
-    {
-        var response = await mediator.Send(new AddIntermediateCertificateAuthority
-        {
-            CertificateAuthority = new()
-            {
-                Id = null,
-                Name = certificateAuthority.Name
-            },
-            ParentId = id,
-            Password = certificateAuthority.Password,
-            ParentPassword = certificateAuthority.ParentPassword
-        });
-
 
         return response switch
         {
-            ValidResponse validResponse => Ok(validResponse.CreatedCertificateAuthorityId.Guid
-                .ToString()),
-            ParentNotFoundResponse => NotFound(),
-            InvalidPasswordResponse => Forbid(),
+            Application.AddRootCertificateAuthority.ValidResponse validResponse => Ok(validResponse.Id.ToString()), 
+            ValidationFailedResponse validationFailedResponse => BadRequest(),
             _ => StatusCode(500)
         };
     }

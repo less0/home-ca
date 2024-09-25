@@ -12,6 +12,11 @@ public class Id
     
     public Guid Guid { get; } = Guid.NewGuid();
 
+    public override string ToString()
+    {
+        return Guid.ToString();
+    }
+
     public override bool Equals(object? obj)
     {
         if (ReferenceEquals(null, obj))

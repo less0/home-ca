@@ -27,6 +27,7 @@
 
     <ItemGroup>
       <None Remove="settings.json" />
+      <UpToDateCheckInput Remove="features\AddCertificateAuthorityValidation.feature" />
       <UpToDateCheckInput Remove="features\GetLeafPrivateKey.feature" />
       <Content Include="Features\AddCertificateAuthorities.feature" />
       <Content Include="Features\Authentication.feature" />

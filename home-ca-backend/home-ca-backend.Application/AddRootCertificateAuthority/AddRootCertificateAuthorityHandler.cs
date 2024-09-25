@@ -1,4 +1,5 @@
-﻿using home_ca_backend.Core.CertificateAuthorityServerAggregate;
+﻿using FluentValidation;
+using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using JetBrains.Annotations;
 using MediatR;
 
@@ -6,12 +7,15 @@ namespace home_ca_backend.Application.AddRootCertificateAuthority;
 
 [UsedImplicitly]
 public class AddRootCertificateAuthorityHandler(ICertificateAuthorityServerRepository repository)
-    : IRequestHandler<AddRootCertificateAuthority, CertificateAuthorityId>
+    : IRequestHandler<AddRootCertificateAuthorityCommand, Response>
 {
-    public Task<CertificateAuthorityId> Handle(AddRootCertificateAuthority request, CancellationToken cancellationToken)
+    public Task<Response> Handle(AddRootCertificateAuthorityCommand request, CancellationToken cancellationToken)
     {
+        Validator validator = new();
+        validator.ValidateAndThrow(request);
+
         var certificateAuthorityServer = repository.Load();
-        var certificateAuthority = new CertificateAuthority
+        CertificateAuthority certificateAuthority = new()
         {
             Name = request.CertificateAuthority.Name
         };
@@ -19,6 +23,6 @@ public class AddRootCertificateAuthorityHandler(ICertificateAuthorityServerRepos
         certificateAuthorityServer.GenerateRootCertificate(certificateAuthority.Id, request.Password);
         repository.Save(certificateAuthorityServer);
         
-        return Task.FromResult(certificateAuthority.Id);
+        return Task.FromResult(Response.Valid(certificateAuthority.Id));
     }
 }

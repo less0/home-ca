@@ -6,9 +6,9 @@ namespace home_ca_backend.Application.AddIntermediateCertificateAuthority;
 
 [UsedImplicitly]
 public class AddIntermediateCertificateAuthorityHandler(ICertificateAuthorityServerRepository repository)
-    : IRequestHandler<AddIntermediateCertificateAuthority, AddIntermediateCertificateAuthorityResponse>
+    : IRequestHandler<AddIntermediateCertificateAuthorityCommand, AddIntermediateCertificateAuthorityResponse>
 {
-    public Task<AddIntermediateCertificateAuthorityResponse> Handle(AddIntermediateCertificateAuthority request, CancellationToken cancellationToken)
+    public Task<AddIntermediateCertificateAuthorityResponse> Handle(AddIntermediateCertificateAuthorityCommand request, CancellationToken cancellationToken)
     {
         var server = repository.Load();
         var certificateAuthority = new CertificateAuthority

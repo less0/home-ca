@@ -4,7 +4,7 @@ using CertificateAuthority = home_ca_backend.Application.Model.CertificateAuthor
 
 namespace home_ca_backend.Application.AddRootCertificateAuthority;
 
-public class AddRootCertificateAuthority : IRequest<CertificateAuthorityId>
+public class AddRootCertificateAuthorityCommand : IRequest<Response>
 {
     public required CertificateAuthority CertificateAuthority { get; init; }
     
