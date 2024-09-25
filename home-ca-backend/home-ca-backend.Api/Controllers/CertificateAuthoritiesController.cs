@@ -58,7 +58,7 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
     [HttpPost("/cas/{id}/children")]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [Produces(MediaTypeNames.Text.Plain)]
-    public async Task<ActionResult> PostIntermediateCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, string id, [FromQuery] string password, [FromQuery] string parentPassword)
+    public async Task<ActionResult> PostIntermediateCertificateAuthority([FromBody] PostIntermediateCertificateAuthority certificateAuthority, string id)
     {
         var response = await mediator.Send(new AddIntermediateCertificateAuthority
         {
@@ -68,8 +68,8 @@ public class CertificateAuthoritiesController(IMediator mediator) : Controller
                 Name = certificateAuthority.Name
             },
             ParentId = id,
-            Password = password,
-            ParentPassword = parentPassword
+            Password = certificateAuthority.Password,
+            ParentPassword = certificateAuthority.ParentPassword
         });
 
 
