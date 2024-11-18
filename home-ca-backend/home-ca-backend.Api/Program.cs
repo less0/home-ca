@@ -1,5 +1,5 @@
+using FluentValidation;
 using home_ca_backend.Api;
-using home_ca_backend.Application;
 using home_ca_backend.Application.GetCertificateAuthorities;
 using home_ca_backend.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -30,6 +30,8 @@ builder.Services.AddAuthentication(options =>
     options.Authority = "https://dev-iqsryzwuowpajk28.us.auth0.com/";
     options.Audience = "home-ca";
 });
+
+ValidatorOptions.Global.LanguageManager.Enabled = false;
 
 var app = builder.Build();
 app.Services.CreateScope().ServiceProvider.GetService<CertificateAuthorityContext>().Database.Migrate();

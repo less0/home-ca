@@ -30,7 +30,10 @@
       <UpToDateCheckInput Remove="features\AddCertificateAuthorityValidation.feature" />
       <UpToDateCheckInput Remove="features\GetLeafPrivateKey.feature" />
       <Content Include="Features\AddCertificateAuthorities.feature" />
+      <Content Include="Features\AddCertificateAuthorityValidation.feature" />
       <Content Include="Features\Authentication.feature" />
+      <Content Include="Features\GetLeaf.feature" />
+      <Content Include="Features\GetLeafPrivateKey.feature" />
       <Content Include="Features\GetLeafs.feature" />
       <Content Include="Features\GetCertificateAuthorities.feature" />
       <Content Include="settings.json">

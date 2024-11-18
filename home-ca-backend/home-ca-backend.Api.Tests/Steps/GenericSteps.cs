@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using FluentAssertions.Execution;
 using home_ca_backend.Api.Tests.Drivers;
-using home_ca_backend.Core.CertificateAuthorityServerAggregate;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Reqnroll;

@@ -13,8 +13,8 @@ namespace home_ca_backend.Api.Controllers
     {
         [HttpPost("/cas")]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [Produces(MediaTypeNames.Text.Plain)]
-        public async Task<ActionResult> PostRootCertificateAuthority([FromBody] CertificateAuthority certificateAuthority, [FromQuery] string password)
+        [Produces(MediaTypeNames.Text.Plain, MediaTypeNames.Application.Json)]
+        public async Task<ActionResult> PostRootCertificateAuthority([FromBody] PostRootCertificateAuthority certificateAuthority)
         {
             var response = await mediator.Send(new AddRootCertificateAuthorityCommand
             {
@@ -23,13 +23,13 @@ namespace home_ca_backend.Api.Controllers
                     Id = null,
                     Name = certificateAuthority.Name
                 },
-                Password = password
+                Password = certificateAuthority.Password
             });
 
             return response switch
             {
                 ValidResponse validResponse => Ok(validResponse.Id.ToString()),
-                ValidationFailedResponse validationFailedResponse => BadRequest(),
+                ValidationFailedResponse validationFailedResponse => BadRequest(validationFailedResponse.Errors),
                 _ => StatusCode(500)
             };
         }

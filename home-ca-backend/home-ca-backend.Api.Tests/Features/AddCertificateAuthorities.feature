@@ -16,29 +16,31 @@ Scenario: Endpoint returns a status OK (200) on a valid request
     When the endpoint /cas is called with a POST request with the data
         | Property | Value                 |
         | Name     | This is a FooBar root |
+        | Password | 5tR0ngp4$$w0rd        |
     Then the status code should be 200
     
 Scenario: Endpoint returns the GUID of the created certificate authority
     Given a valid user is authenticated
     When the endpoint /cas is called with a POST request with the data
-        | Property | Value  |
-        | Name     | r007   |
-        | Password | 123456 |
+        | Property | Value        |
+        | Name     | r007         |
+        | Password | r007b$r[ABCD |
     Then the response is a valid GUID
     
 Scenario: Root certificate authority with well-formed certificate is created on successful request
     Given a valid user is authenticated
     When the endpoint /cas is called with a POST request with the data
-        | Property | Value      |
-        | Name     | FooRootBar |
-        | Password | f00b4r     |
+        | Property | Value        |
+        | Name     | FooRootBar   |
+        | Password | f00b4rQuXb4% |
     Then there is a certificate authority "FooRootBar" with a well-formed certificate for the returned GUID
 
 Scenario: Root certificate is created with a lifetime of 10 years
     Given a valid user is authenticated
     When the endpoint /cas?password=quxbaz is called with a POST request with the data
-        | Property | Value      |
-        | Name     | QuxRootBaz |
+        | Property | Value        |
+        | Name     | QuxRootBaz   |
+        | Password | jht[Eo82N37u |
     Then there is a certificate with a lifetime of 10 years for the returned GUID
     
 Scenario: Create intermediate certificate endpoint is available
